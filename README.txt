@@ -5,4 +5,4 @@ The actual project is a system for turning some simple text markup into notes th
 I am an amateur, so please try not to laugh.
 
 David Weinberger
-self@evident.com
+self@evident.com 
