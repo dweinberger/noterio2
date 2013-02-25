@@ -1,0 +1,54 @@
+:: BIBLIO
+
+TITLE= The Secret of Immer Strength: My Story
+AUTHOR= Norris, Chuck. With Joe Hyams
+PUB= Little, Brown and Company
+DATE= 1988
+CITY= Boston
+TAGS= bio,martial arts, roundhouse
+JOURNAL=
+VOL=
+ISSUE=
+PAGES=
+TRANSLATOR= 
+TYPE= book
+MISC= autographed!
+CONTAINER= 
+NICKNAME=chuckstory
+URL=
+PROJECT=memoirs
+NOTE=finest of its type
+ISBN=0-316-61191-3
+
+:: NOTES
+
+3/ "Whatever luck I had, I made." >> wisdom
+
+56/ "I took something from each style and modified it for myself...">> education,styles
+
+>> bouts
+
+58-59/ Fought Hiroshi Nakamura in 1967 >> Japanese, winning
+
+63/ Joe Lewis
+
+65/ "thirteen fights in eleven hours" and Bruce Lee came over to congratulate him >> bruce lee, hollywood
+
+72/ Fred Wren, in early 1968 >> Dallas
+
+>> hollywood
+
+72/ Met Debbie Reynolds in Las Vegas in 1967 >>
+
+129/ <i>Good Guys Wear Black</i> >> movies
+
+130-131/ Films <i>A Force of One</i> >>movies
+
+>>
+
+138/ Enters first off-road race in 1981. Wins. "The other drivers couldn't understand how a novice could beat them all. The reason was that I was in very good physical shape, which mean that I could take the pounding and that my concentration was intense." >> race, winning
+
+140/ "For me, friendship is like marriage." >> wisdom
+
+140/"I have found that when you have an enthusiasm about life, you attract people with the same passion." >> wisdom
+

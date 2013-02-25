@@ -1,0 +1,362 @@
+#logo{
+  font-family:Tahoma,Helvetica Neue,Arial;
+  color:#FF76C5;
+}
+p, .subhead {
+ font-family:Tahoma,Helvetica Neue,Arial;
+
+}
+.subhead{
+	color: #0575FF;
+}
+#prototypespan{
+	background-color:#B7FFFF;
+	height: 95%
+	text-align:right;
+	color: #FF0AD0;
+	font-family:Tahoma,Helvetica Neue,Arial;
+	font-size: 12px;
+	font-weight:bold;
+}
+
+.bibtextclass{
+	height: 25px;
+	border-radius: 5px;
+	background-color: #F5FFF6;
+}
+.bibp{
+	font-family: Georgia, Bookman, Garamond, Serif;
+	font-size: 11px;
+	margin-top: 6pt;
+	margin-bottom: 6pt;
+	
+}
+#topicsdiv{
+ background-color:#C6FFE2;
+}
+.topicdiv{
+	width: 300px;
+	height: 75px;
+	max-height:400px;
+	border: 1px dashed red;
+	float:left;
+	overflow: scroll;  
+}
+.topictextclass{
+	width:100%;
+	background-color: "#C0DFFF";
+	height: 40px;
+	font-family: Tahoma, Helvetica Neue, Arial;
+	text-align:center;
+	border: 3px solid #cccccc;
+	padding: 5px;
+	font-size:12px;
+}
+.topicboxh1{
+	
+	font-size: 14px;
+	text-align:center;
+	color:blue;
+	background-color: yellow;
+	position:relative;
+	width: 100%;
+}
+.topicboxp, .topicboxbib, .topicboxtext{
+	font-size: 10pt;
+	font-family: Georgia, Bookman, Garamond,Times Roman, Serif;
+}
+.topicboxh1text{
+	font-size: 14pt;
+}
+.topicboxbib{
+	color:gray;
+}
+.savedtopicbox{
+	font-size:10pt;
+	color:gray;
+	float: right;
+}
+.unsavedtopicbox{
+	font-size:10pt;
+	color:blue;
+	text-decoration: underline;
+	float: right;
+	}
+.minimizebtn, .minimizeBibsbtn, .deletetopicboxbtnclass, .topicboxtextarea{
+	font-size:10pt;
+	float:right;
+}
+.topicboxtextarea{
+  width: 200px;
+  height: 25px;
+  background-color:#FF6;
+}
+.dragIcon{
+   font-size:16pt;
+   font-family: Georgia, Times Roman, Serif;
+   background-color: "#B0FFB4";
+}
+textarea {
+	font-size:10pt;
+	height:10pt;
+}
+#stackviewdiv{
+ width:500px;
+ height: 100%;
+}
+#multiuploaddiv{
+	background-color: #C2F2DF;
+}
+.uploadclass{
+	font-size:11pt;
+	font-family: Tahoma,Helvetica Neue,Arial,Verdana,Sans Serif;
+
+}
+#loginregdiv{
+	background-color: #AFFFB9;
+	font-size:10pt;
+	font-family: Tahoma,Arial,Verdana, Sans Serif;
+}
+#logindisplayclass{
+	color: #C2CDFF;
+}
+#regdiv{
+	background-color:#D8FFA5;
+}
+.smalltext, .smalltextupdate, .smalltextblue, #footer{
+	font-size: 10pt;
+	color: white;
+	font-family: Tahoma, Arial,Verdana, Sans Serif;
+}
+.smalltextupdate{
+  color: yellow;
+}
+.smalltextblue{
+  color: #308689;
+}
+.smallbutton{
+  background-color: #18229D;
+  height: 25px;
+}
+.showhidedivpclass{
+   color: #FFFFFF;
+   font-size: small;	
+}
+.showhidedivclass, #footer{
+	border-bottom-color: #FFFFFF;
+	background-color: #240089;
+}
+#newprojectspan{
+	background-color: #C6E2FF;
+}
+.scratchpaddivclass{
+	border-color: #00480A;
+	border-width:1px;
+	background-color: #E9FFEC;
+	width:90%;
+}
+.scratchpadspanclass{
+		font-size:10pt;
+}
+.scratchpadfootnoteclass{
+	font-size:8pt;
+}
+.scratchpadh2class{
+	font-family:Arial, Helvetica, sans-serif;
+	font-size: 12pt;
+	color:Green;
+}
+#stackviewdiv{
+  width:400px;
+}
+
+.configuredivclass{
+	background-color: Gray;
+}
+.bookadddivclass{
+	background-color: #FFFAD8;
+}
+.noteadddivclass{
+	background-color: Red;
+}
+.notelisttableclass{ /* Table with note rows */
+	/* border-width: 1px; */
+	
+}
+.biblioplaintextareaclass{
+	background-color: #DDDDDD;
+	width: 400px;
+	height: 30px;
+	font-size: 8pt;
+	font-family:Geneva,Helvetica, san-serif;
+}
+
+.notecontentclass,.notecontentclassediting{
+	/* width: 700pt; */ 
+	color: Black;
+	background-color: #D6EAEF;
+	font-family: "Georgia";
+	font-size: 10pt;
+	width: 100%;
+	height: auto;
+	/*border: 1px solid #948C95;*/
+	border-radius: 8px;
+	padding-top:3px;
+	padding-bottom:3px;
+	
+}
+.notecontentclassediting {
+	background-color: #353A3C;
+	color: #C7D9DE;
+}
+.notepageclass{
+	/* width: 30pt;*/ 
+	font-family: Arial;
+	font-size: 9pt;
+	color: #336666;
+	border: 1px solid #948C95;
+	border-radius: 5px;
+}
+.notetagclass{
+	/* width: 100pt;*/ 
+	color: #FF00DD;
+}
+.inditag{
+	box-shadow:rgba(0,0,0,0.5) 0px 0px 8px;
+	border-radius: 5px;
+	color:#2A3C2E;
+	background-color:#95D5A3;
+	padding: 2px;
+}
+.notestableheaderclass{
+	font-family: Helvetica Neue, Helvetica, Arial, Sans Serif;
+	font-size: 14pt;
+	color: #364E6A;
+	background-color: #B8B5E3; 
+	text-align:center;
+}
+.metatitle{
+	color:#737D96;
+}
+.notestabletitleclass { /* Notes For Tag: */
+	font-family: Georgia;
+	font-size: 16pt;
+	color: #BCBAE9;
+	background-color: #243CA8; 
+}
+.booklistspan{
+/* width is 25px less than textarea to compensate for no scrollbar */
+
+width:300px;
+font-family: Tahoma;
+font-size:11px;
+ 
+}
+.selectratingclass{
+	font-size:11px;
+	text-decoration:none;
+}
+.selectratingclass:hover {
+  background-color: YELLOW; 
+  font-size:14px;
+  
+}
+.booktableclass{
+	border:0;
+	background-color: #dfe7ff;
+}
+.booklistheader{
+	font-family: Tahoma;
+	font-size: 11pt;
+	background-color: #660099;
+	color: white;
+}
+.booklistrowclass{
+   border: 1px dashed  #62F2FF;
+}
+.booklisttitleclass{
+	font-family: Tahoma;
+	font-size: 10pt;
+	background-color: #CFD6EE; 
+	
+}
+.booklistauthorclass{
+	font-family: Tahoma;
+	font-size: 10pt;
+	color: #240089;
+	background-color: #CFD6EE; 
+	
+}
+.booklistnoteclass{
+	font-family: Tahoma;
+	font-size: 9pt;
+	color: #240089;
+	background-color: #CFD6EE; 
+	
+}
+.booklistnumbernotesclass{
+	font-family: Tahoma;
+	font-size: 10pt;
+	color: #000089;
+	text-align:right;
+	background-color: #E2FFFA; 
+	
+}
+/* #booklisttextarea{
+width:325px;
+font-family:Arial;
+font-size:11px;
+} 
+*/
+	.notelinetext{
+		background-color:#FFCC00;
+		word-wrap: true;
+		width: 250px;
+		height:20px;	
+	}
+	.notelinepagenumber{
+
+		background-color:#DDCC00;
+		word-wrap: false;
+		width: 50px;
+				height:20px;	
+	}
+	.notelinetags{
+		background-color:#AACC00;
+		word-wrap: false;
+		width: 150px;
+		height:20px;
+/*			border-width: 0px;
+	border-bottom-width: 5px;	
+*/
+	}
+
+.book4notes{
+	color: #666666;
+}
+.tagclass{
+  font-family: Helvetica Neue,Helvetica,Geneva,Arial,Sans Serif;
+  color: #0080FF;
+}
+
+#notesareadiv{
+	background-color:#220000;
+}
+.tagintitle { /* display tag in "Notes for Tag=" */
+	color: #FF0000;
+}
+/* For the tiny notes in a note row */
+.noteinfobookidclass{
+	color: #CCCCCC;
+	font-size: 8pt;
+	font-family:Arial;
+}
+.noteinfonoteidclass{
+	color: #AAAAAA;
+	font-size: 8pt;
+	font-family:Arial;
+}
+.uiwarning{
+ background-color:yellow;
+}
+

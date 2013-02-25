@@ -1,0 +1,264 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+    <head>
+      
+<!-- Sept. 29, 2012 -->
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<title>Notio 0.02 - January 27, 2013</title>
+
+<link type="text/css" rel="stylesheet" href="notio.css">
+<script type="text/javascript" src="../includes/jquery-1.8.0.min.js"></script>
+<script type="text/javascript" src="../includes/jquery-ui/js/jquery-ui-1.9.0.custom.min.js"></script>
+<script type="text/javascript" src="notio-02.js"></script>
+<script type="text/javascript" src="../includes/multiSplit.js"></script>
+<link rel="icon" type="image/ico" href="favicon.ico"/>
+<!-- stackview -->
+<script type="text/javascript" src="../includes/stackview/js/jquery.stackview.min.js"></script>
+<link rel="stylesheet" href="../includes/stackview/css/jquery.stackview.css" type="text/css" />
+<!-- generate downloadable text files -->
+<script type="text/javascript" src="../includes/generateFile/assets/js/jquery.generateFile.js"></script>
+<!-- script type="text/javascript" src="tester.js"></script -->
+<script type="text/javascript" src="../includes/jquery.tablesorter/jquery.tablesorter.min.js"></script>
+<!-- thank you http://tablesorter.com/ -->
+
+		
+<script language="javascript" type="text/javascript">
+
+$(document).ready(function(){    
+ init();
+    
+ });
+ 
+</script>
+</head>
+
+ <body>
+ <!-- ========================================== BODY ======================== -->
+ 
+ <!-- === corner banner ==-->
+ <!-- <span > <img style="position: absolute; top: 0; right: 0; border: 0;" src="./images/ ype.png" alt="This is a toy." onclick="alert('This is a mere prototype, created by a non-developer at the Harvard Libary Innovation Lab. It\'s a sketch. Please don\'t rely on it. And send bug reports etc. to self@evident.com. Thanks!')"></span> -->
+ 
+ <!--================== SHOW/HIDE BUTTONS ==========-->
+
+<div id="showhidediv" class="showhidedivclass">
+	<span id="logo">Noter.io</span>
+	<span id="dbcombospan" class='smalltext'>Project: 
+	<select  id="projectselector"  name="projectselectorname" onChange="loadNewProject(this.value)"></select>
+	</span>
+	<!-- show how many books retrieved -->
+	<span id="retrievedbooksp" class='smalltextupdate'></span> 
+	<!-- book display radio buttons -->
+	<span id="booklistradio"  class='smalltext'>
+		<input type="radio" name="booklistbtns" value="List"> List
+		<input type="radio" name="booklistbtns" value="Shelf" checked>Shelf
+	</span>
+	<!-- select menu -->
+	<span>
+	  <select id="mainselectlist" tabindex="1" >
+	    <!-- option  value="menu">Menu</option -->
+	    <option id="actionsoption" value="actions">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Actions]</option>
+		<option  value="newproject">New project</option>
+		<option  value="refreshprojects">Refresh project list</option>
+		<option  value="addnotes">Add notes</option>
+		<option  value="bookinfo">Show book info</option>
+		<option  value="showbooklist">Show book list</option>
+		<option  value="hidebooklist">Hide book list</option>
+		<option  value="createbib">Create bibliography</option>
+		<option  value="showhidescratchpad">Show/Hide scratchpad</option>
+		<option  value="refreshbooklist">Refresh book list</option>
+	  </select>
+</span>
+<!-- login info -->
+<span id="loginDisplayTextSpan"class="smalltext logindisplayclass" onclick="ShowHideDiv('loginregdiv')"><u>Login</u>:</span>
+<span id="loginDisplaySpan"class="smalltext logindisplayclass" onclick="ShowHideDiv('loginregdiv')"></span>
+<span id="projectdescriptionspan"></span>
+<!-- Prototype banner -->
+<span id="prototypespan" onclick="alert('This is a prototype, done by a non-developer at the Harvard Library Innovation Lab. Please send bug reports, comments, etc. to self@evident.com. And do NOT rely on this site staying up or usable. Thanks!')">&nbsp;&nbsp;This is a PROTOYPE&nbsp;&nbsp;</span><!-- project description -->
+<span class="smalltext" onclick="showInfo('about')">[About] </span>
+<!-- create new project -->
+<div id="newprojectspan" style="display:none;">
+		<p id="projectname" style="color: ##0D158C;"> <img src="./images/uptriangle-green.png" onclick="ShowHideDiv('newprojectspan')">
+		Name: <textarea id="projectnametxt" cols=20 style="height: 20px"></textarea>
+		<span id="projectdesc"  style="color: #0D158C;">Description: <textarea id="projectdesctxt" cols=40 style="height: 20px"></textarea></span>
+	    <input type="button" value="Add new project" onclick="createNewProject()">
+	</div>
+</div>
+
+<!--========================= LOGIN or REGISTER -->
+ <div id="loginregdiv" style="display:none";>
+ <div id="logindiv"  class="logindivclass">
+    <img src="./images/uptriangle-green.png" onclick="ShowHideDiv('loginregdiv')">
+ 	Login: 
+  	<form name="login" id="login">
+  	*User: <input type="text" id="userLog"> 
+  	*Password: <input type="text" id="passwordLog" cols="10">
+  	Email (in case of lost pwd): <input type="text" id="emailLog">
+  	<input type="button" value="Log in" onClick="logMeIn()" style="height: 25px;font-size:24px;">
+  	<input type="button" value="Register" onClick="registerMe()"  style="height:20px;font-size:14px;"> 
+  	<input type="button" value="Reset password" onClick="sendResetEmail()"  style="height:14px;font-size:8px;color:gray"> 
+  	<span class="smalltextblue" onclick="changePwdPage()">Edit settings</span>
+  	</form>
+  </div>
+ </div>
+ 
+ <!--========================= MULTI FILE UPLOAD DIV -->
+ <div id="multiuploaddiv" style="background-color:'#F3F3F3'; display:none;">
+ 
+      <img src="./images/uptriangle-green.png" onclick="ShowHideDiv('multiuploaddiv')">
+	 <!-- the form that does it -->
+	 <form  action='' enctype="multipart/form-data" id="multiuploadform">
+	 <input type="hidden" name="MAX_FILE_SIZE" value="10485760">
+	 <input type="hidden" name="project" id="projectnameform" value="">
+		<input type="file" multiple="" name="userfiles[]" size="50"> 
+		<input type='button' value='Submit all' id="multiformbutton"> 
+	 </form>	
+	
+
+	
+	<div id="multiuploadconfirmdiv"></div>
+	<div id="uploadresultsdiv"></div>
+</div> <!-- uploadfiles div-->
+
+
+ 
+<div id="boxes">
+ 
+<div id="statusupdate"  style="display:none;">
+<p><input type="button" value="Hide" onclick="ShowHideDiv('statusupdate');"></p>
+</div>
+
+
+<!--  INFO -->
+
+<!-- ADD BOOK -->
+  <div id="bookadddiv" class="bookadddivclass" style="display:none">
+  <p> <img src="./images/uptriangle-green.png" onclick="ShowHideDiv('bookadddiv')">
+  	 Book title: <textarea class="bibtextclass" id="btitle" name="btitle" rows=1 cols=50></textarea>
+	 Author: <textarea class="bibtextclass"  id="bauthor" name="bauthor" rows=1 cols=20></textarea>
+	 Publisher: <textarea class="bibtextclass"  id="bpublisher" name="bfirstname" rows=1 cols=15></textarea>
+	 City: <textarea class="bibtextclass"  id="bcity" name="bcity" rows=1 cols=10></textarea>
+	 Date: <textarea  class="bibtextclass" id="bdate" name="bdate" rows=1 cols=9></textarea>
+	 URL: <textarea  class="bibtextclass" id="burl" name="burl" rows=1 cols=4></textarea>
+	 Translator: <textarea class="bibtextclass"  id="btranslator" name="btranslator" rows=1 cols=15></textarea>
+	 Type: <textarea class="bibtextclass"  id="btype" name="btype" rows=1 cols=4></textarea>
+	 Journal: <textarea class="bibtextclass"  id="bjournal" name="btype" rows=1 cols=4></textarea>
+	 Issue: <textarea class="bibtextclass"  id="bissue" name="bissue" rows=1 cols=4></textarea>
+	 Vol: <textarea class="bibtextclass"   class="bibtextclass" id="bvol" name="bvol" rows=1 cols=4></textarea>
+	 Misc: <textarea  class="bibtextclass" id="bmisc" name="bmisc" rows=1 cols=15></textarea>
+	 Tags: <textarea class="bibtextclass"  id="btags" name="btags" rows=1 cols=15></textarea> 
+	 Tags: <textarea  class="bibtextclass" id="bnote" name="bnote" rows=1 cols=15></textarea> 
+     <input type="button" class='smallbutton' name="addbook" onclick="addNewBook(0);" value="Add Book"> 	 
+	 BookID: <textarea  class="bibtextclass" id="bbid" name="bbid" rows=1 cols=4></textarea>
+	 <input type="button" onClick="deleteDisplayedBook()" value="Delete book">
+     <!-- Bibliographic info in plain text goes here -->
+	 <span><span class="smalltext" onClick="insertPlainTextBiblio(document.getElementById('bbid').value)">Make entry</span><span class="smalltext"><input type="checkbox" id="htmlentry">html?</span> <textarea id="biblioplaintext" name="biblioplaintext" class="biblioplaintextareaclass"></textarea></span>	
+
+  </div>
+  <!--- bibliography gets built and displayed here -->
+  <div id="bibliodisplaydiv" style="display:none">
+  	<p id= "bibliographytitle" class="notestableheaderclass"> 	<img src="./images/uptriangle-green.png" onclick="ShowHideDiv('bibliodisplaydiv')"> Bibliography</p>
+  	<div id="bibdisplaydiv">
+  	</div>
+  </div>
+  
+
+<!-- BOOKLISTS - TABLE OR STACKVIEW -->	
+<div id="bookstable"></div>	 
+<div id="stackviewcontainer">
+	<div id="stackviewdiv"></div>
+</div>
+ 
+ <!-- NOTES GO HERE -->
+ 
+ <!-- Place to accumulate notes (SCRATCHPAD) -->
+ <div id="showbookstable" style="display:none"><span class="smalltextblue" onclick="$('#bookstable').show(400); $('#showbookstable').hide(400);">Click to show book table</span>
+ </div>
+ <div id="scratchpaddiv" class="scratchpaddivclass"  style="display:none;">
+     <h2 class='scratchpadh2class'>ScratchPad 
+	 <input type="button" onClick="ShowHideDiv('scratchpaddiv')" value="hide">
+	 <input type="button" onClick="clearScratchpadSpan()" value="Clear">
+	 <input type="button" id="savescratchbtn" onClick="saveScratchpad()" value="Save as rtf">
+	 </h2>
+	 <span id="scratchpadspan" class="scratchpadspanclass"></span>
+</div>
+
+<div id="notestablediv">
+	  <span id="notestableheader"></span>
+	  <div id="notestable">
+	  <!--
+	  Notes go here <table id="noteslisttable" class="notelisttableclass"><tbody id="notestablebody1"></tbody></table>
+	  -->
+	  </div>
+	  <!-- Button for managing the list of notes -->
+	  <div id="notestablebtns" style="display:none">
+	    <input type='button' onClick='addToScratchpad()' value='Add selected to scratchpad'>
+   		<!-- <input type='button' onClick='addToplaylist()' value='Add to topic box'> -->
+  		<input type='button' onClick='revealAddNoteManually()' value='Create note'>
+  		<input type='button' onClick='deleteSelectedRows()' value='Delete Rows'>
+   		<!-- <input type='button' onClick='exportBookInBiblioDisplayToText(\"\")' value='Export to Text'> -->
+   		<textarea id='batchtagid' cols="30" style="height:20px"></textarea>
+  		<input type='button' onClick='batchTag()' value='Tag Selected Notes'> 
+	  </div>
+ </div>
+ <!---- ADD A NEW NOTE ---->
+ <div id="addnewnotediv"   style="display:none;" class="noteadddivclass">
+ 	<p>New note content: <textarea id="newnotecontent" cols=70></textarea>
+	pages: <textarea id="newnotepages" cols=10></textarea>
+    Tags <textarea id="newnotetags" cols=20></textarea>
+	<input type="button" onclick="addNewNoteManually()" value="Add the note">
+	<input type="button" onclick='ShowHideDiv("addnewnotediv")' value="Cancel"></p>
+ </div>
+ 
+ <!-- TOPIC BOXES -->
+ <div id="topicsdiv">
+ 	<div id="topicbtns">
+ 		<span class="subhead">Topic boxes </span>
+ 		<input type="button" value="Show" title="Display the topic boxes you've created" onclick="getAllTopicboxes()">
+ 		<span id="topicbtnstrip">
+ 			<input type="button" value="New" title="Create new topicbox. (Requires unique name within project)" onclick="createNewTopicBox('FIRST TIME')">
+ 			<input id="topicboxshrinkbtn" type="button" value="Shrink all" title="Show only the titles" onclick="growOrShrinkAllTopicboxes()";
+ 		</span>
+ 	</div>
+ </div>
+	
+
+<!-- TAGS -->		
+		<div><span id="tagclouddiv" style="clear:left"><p>&nbsp;</p>
+			</span>
+			<span id="tagcloudradio"  class='smalltextblue'>
+				<input type="radio" name="tagcloudbtn" value="Project" checked>Project
+				<input type="radio" name="tagcloudbtn" value="All">All
+			</span>
+		</div>  
+		
+<!-- SEARCH -->  
+     <div id="searchdiv">
+		
+	    <p class="smalltextblue">
+	    	Separate terms with commas.
+	    	<input type="radio" name="andor" id="and" value="AND" checked>All terms 
+	    	<input type="radio" name="andor" id="or" value="OR"> Any of the terms
+	    </p>
+	    <!-- TAG SEARCH -->
+	    <span id="tagsearchdiv"> 
+	    	<textarea cols=30 style="height:20px" id="tagsearchtext">readlater,progress</textarea><input type="button" id="tagsearchbtn" name="tagsearchbtn" value="Search for tags" onclick="multiTagSearch()">
+	    </span>	
+		<!-- TEXT SEARCH -->
+		
+		<p class="smalltextblue" style="font-color:gray"> Prefix with + to require word, - to exclude word. <br>
+		 <span id="textsearchdiv">
+		<textarea  style="height:20px" cols=30 id="textsearchtext">Bossuet,science</textarea><input type="button" id="textsearchbtn" name="textsearchbtn" value="Search for Text" onclick="textSearch()"></p>
+		<span>	
+ 	  </div>
+		
+        <div>
+           
+<!-- FOOTER -->
+   <div id="footer" style="text-align:right">
+	
+	   <span onclick="showInfo('privacy')"> [Privacy] &nbsp;&nbsp;</span>
+   </div>
+    </body>
+</html>
+
