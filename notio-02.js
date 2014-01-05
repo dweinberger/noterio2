@@ -3929,9 +3929,10 @@ function importUpdate(bid,title, dateuploaded){
 	var cellid = "#titlecell" + bid;
 	var pos = $(cellid).offset();
 	// get update button
-	var btn = $("#titlecell .updateclass");
-	var tpos = pos.top + 25;
-	var lpos = pos.left + $(cellid).width();
+	var btn = $(cellid + " .updateclass").first();
+	var btnpos = (btn).offset();
+	var tpos = btnpos.top - 35;
+	var lpos = btnpos.left + $(btn).width() + 35;
 	var overly  = document.getElementById("updateBookContentsDiv");
 	
 	//$("#updateBookContentsDiv").offset({ top: offset.top, left: offset.left});

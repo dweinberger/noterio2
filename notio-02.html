@@ -42,7 +42,7 @@ $(document).ready(function(){
  <!-- <span > <img style="position: absolute; top: 0; right: 0; border: 0;" src="./images/ ype.png" alt="This is a toy." onclick="alert('This is a mere prototype, created by a non-developer at the Harvard Libary Innovation Lab. It\'s a sketch. Please don\'t rely on it. And send bug reports etc. to self@evident.com. Thanks!')"></span> -->
  
  <!--================== SHOW/HIDE BUTTONS ==========-->
-<p>github update test</p><div id="showhidediv" class="showhidedivclass">
+<div id="showhidediv" class="showhidedivclass">
 	<span id="logo">Noter.io</span>
 	<span id="dbcombospan" class='smalltext'>Project: 
 	<select  id="projectselector"  name="projectselectorname" onChange="loadNewProject(this.value)"></select>
@@ -264,7 +264,7 @@ $(document).ready(function(){
 <!-- UPDATE BOOK OVERLAY -->
  <div id="updateBookContentsDiv" class="updateBookContents" style="display:none">
  	<!-- room for some text -->
- 	<div class="updatebookhead">Update book notes</div>
+ 	<div class="updatebookhead"><span id="leftarrow"><img src="images/leftarrow.png"></span>Update this item's notes</div>
  	<div id="updatebooktext"></div>
 	 <!-- the form that does it -->
 	 <form  action='singleuploadPart1.php' enctype="multipart/form-data" id="singleuploadform">
