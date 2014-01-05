@@ -1,0 +1,77 @@
+:: BIBLIO
+
+TITLE= Heidegger and sartre: An Essay on Being and Place
+AUTHOR=Fell, Joseph P.
+PUB= Columbia University Press
+DATE= 1979
+CITY= NYC
+MISC=
+TAGS= 
+JOURNAL= Heidegger Studies
+VOL=2
+ISSUE=
+PAGES= 41-65
+URL=
+
+:: NOTES
+
+ix/ Why this book? Common heritage, common ontological problem, with divergent answers
+
+ix/ "They represent two fundamental diredtions or alternative routes that their common philosophical inheritance makes possible at the present time." >> thrown, history
+
+xii/ The differences in their "lide-style" are "philosophically relevant" ..."becauyse a philosophy is not propounded ina vacuum but by a particular person in a particular historical situation.">> thrown, history
+
+xii/ Subtitle  "is intended to suggest a correlation between ontology and the environment in which it is a proposied -- a correltation tha both thinkers are driven to make.">> thrown
+
+xiv/ A risk the bok takes: "above all, an attempt to employ the notions of 'familiarity', 'community of nature' and 'place' as primary ontological categories in interpreting the fundamental significance of H's and S's ontologies." >> community,already
+
+8/ Fell reads modern phil as an attempt to find a "third way" out of the "broken totality">> thrown
+
+/Thrown into a broken world -- broken by philosophy
+
+10/ Hegel thought phenomena reveal themselves without residue, an identity of thought and being, which Fell says is a founding thought of Fell's book which is going to work out the meaning of that identity for H and S.
+
+11/ The answer depends on what we take as being the ground of the unity of thought and being >> ground
+
+20/ The community of essences, of subject and object, is the "crucial ontologial problem inherited by H and S from Husserl and, through Husserl, from the modern  ontological tradition." It goes back to Aristotle.>> prior community
+
+25-7/ The three questions he frames for H and S are all about beginning points: where does one begin from (everyday or reduced?) , can ontology avoid metaphysics and human grounding, can phenomena unify being and awareness?
+
+27/Fundamenetal question:"what must the ground of the phenomenon be if the phenonmenon is to be a disclosure of Being?"
+
+31/ SZ is an attempt to heal a broken ontological totality that he inherits from his philosophical predecessors.">>rupture
+
+32/SZ "deals primarily with Da-sein and hence with Sein insofar as it is da." [Being there is an always already out there, like the always already] >> rupture, always already
+
+37-8/ "The fundamental force of Heidgger's incessantly repeated expression'always already' (immer schon) is as a constant reminder that tht the union of essence nd existence, of idea and entityt, that phlosophy seeks to construct out of subjective nd  objective factors is already there in the most ordinary human experience." >> always already
+
+39/ inauth = disowning what you already are >> authenticity
+
+42-3/ cites aristotle precedent community of nature. "'Dasein is the Being of this in between'">>aristotle
+
+90/ Cites Aristotle precedent community again as critique of Sartre: negation rules out community>>aristotle
+
+47/ Dasein is the locale of the truth of Being. The there of beings is the clearing within which objective beings exist.	
+
+57/ H interprets Western metaphysics as quest for a secure ground. >> play
+
+61/ The "moment of vision" in SZ is a reapproprition of fallen everydayness, not an escape from it. >> fallible
+
+62/ moment of vision is not an "airy transcendence but rather a reconciliation with a Dasein that is always already 'there'. This is H's freedom. >> fallible
+
+62/Does Dasein ground itself? Nope. >> ground
+
+65/ Conc. of SZ section: phenomenon is what it is >> vp,,imoyu of its ground as the unity of thought and being.
+
+81/ Sartre's mistake: the ground of the phenomenon is actual "prior to the intervention of understanding..." [there is no precedent community]>> always-already
+
+91-2/ Fell's suggestion: heal the "sharp duality" by finding it to be a duality within "a prior and projected unity..." [92] "...the broken totality" is not "healed."
+
+98/H wants to free the unspoken thought, hidden by Being's own forgetfulness.
+
+98/The turn was due to a reinterpretatio of ground based on world and nothingn es>>ground,turn
+
+122/Dasein's world is the "condition of both the phenomenon's presence for us and its intelligibiliy." "This particular referential totality...is not simply individual but rather is communal...Thus the 'precedent community of nature' is quite literally communal and it is incumbent on the true resoluteness to own up to thep rior communality.">> precedent, aristotle
+
+
+

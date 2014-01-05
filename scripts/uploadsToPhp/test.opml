@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<opml version="1.0">
+  <head>
+    <title>test</title>
+    <expansionState>0,6,9</expansionState>
+  </head>
+  <body>
+    <outline text=":: BIBLIO">
+      <outline text="AUTHOR= Author's name"/>
+      <outline text="TITLE= title of first techdet book"/>
+      <outline text="PUB= publisher of techdet"/>
+      <outline text="DATE= 2013"/>
+      <outline text="CITY= Boston"/>
+    </outline>
+    <outline text=":: NOTES">
+      <outline text="1/first note&gt;&gt; tag1"/>
+      <outline text="2/second note&gt;&gt; tag2"/>
+    </outline>
+    <outline text="subsection 1">
+      <outline text="3/note three &gt;&gt; tag1"/>
+    </outline>
+  </body>
+</opml>

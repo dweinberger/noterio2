@@ -1,0 +1,31 @@
+:: BIBLIO
+
+TITLE= The Crisis of Reasong: A Reading of Heidegger's Zur Seinsfrage
+AUTHOR= Fell, Joseph P.
+PUB= 
+DATE= 1986
+CITY= 
+MISC=
+TAGS= 
+JOURNAL= Heidegger Studies
+VOL=2
+ISSUE=
+PAGES= 41-65
+URL=
+
+:: NOTES
+
+41/ how reason is "regrounded or situated by H" >> ground,begin
+
+46/ Problem with reason is that it "appears to owe nothing to the world it reasons about." Thus, things lose their meaning >> ground,origin,situation
+
+47/ "The task, then would not be to arrive at it [the meaning of beings] for the first time, but to remember it." >> 47 time
+
+47/ "True going-forward is _itself_ a going back." >> time
+
+49/ phil controversies are grounded in a prior disclosure that lets them go forward. >> origin, time
+
+50/ Aristotle: "...interaction between two factors is held to require a precedent community of nature between the factors. De Anima. 
+
+51/ phil problems arise from abstraction from original "initial inner union" This is the existential a priori, the always already. Comes to us as the future.>> time
+

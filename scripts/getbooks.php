@@ -48,6 +48,9 @@
 		$rowarray['journal'] = trim($journal);
 		$rowarray['note'] = trim($note);
 		$rowarray['isbn'] = trim($isbn);
+		$rowarray['parent'] = trim($parent);
+		$rowarray['nickname'] = trim($nickname);
+		$rowarray['dateuploaded'] = trim($dateUploaded);
 		// add this row to the arrayofrows
 		array_push($arrayofrows, $rowarray);
 		

@@ -2,7 +2,7 @@
 <html>
     <head>
       
-<!-- Jan. 2, 2014 -->
+<!-- Sept. 29, 2012 -->
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 
 <title>Notio 0.02 - January 27, 2013</title>
@@ -11,6 +11,7 @@
 <script type="text/javascript" src="../includes/jquery-1.8.0.min.js"></script>
 <script type="text/javascript" src="../includes/jquery-ui/js/jquery-ui-1.9.0.custom.min.js"></script>
 <script type="text/javascript" src="notio-02.js"></script>
+<script type="text/javascript" src="../includes/multiSplit.js"></script>
 <link rel="icon" type="image/ico" href="favicon.ico"/>
 <!-- stackview -->
 <script type="text/javascript" src="../includes/stackview/js/jquery.stackview.min.js"></script>
@@ -255,26 +256,11 @@ $(document).ready(function(){
 		
 		<p class="smalltextblue" style="font-color:gray"> Prefix with + to require word, - to exclude word. <br>
 		 <span id="textsearchdiv">
-		<textarea  style="height:20px" cols=30 id="textsearchtext"></textarea><input type="button" id="textsearchbtn" name="textsearchbtn" value="Search for Text" onclick="textSearch()"></p>
+		<textarea  style="height:20px" cols=30 id="textsearchtext">Bossuet,science</textarea><input type="button" id="textsearchbtn" name="textsearchbtn" value="Search for Text" onclick="textSearch()"></p>
 		<span>	
  	  </div>
 		
         <div>
-        
-<!-- UPDATE BOOK OVERLAY -->
- <div id="updateBookContentsDiv" class="updateBookContents" style="display:none">
- 	<!-- room for some text -->
- 	<div class="updatebookhead">Update book notes</div>
- 	<div id="updatebooktext"></div>
-	 <!-- the form that does it -->
-	 <form  action='singleuploadPart1.php' enctype="multipart/form-data" id="singleuploadform">
-	 <input type="hidden" name="MAX_FILE_SIZE" value="10485760">
-	 <input type="hidden" name="bookidsingle" id="projectnameformsingle" value="8">
-		<input type="file" multiple="" name="userfiles[]" size="50"> 
-		<input type='button' value='Update the file' id="multiformbuttonsingle"> 
-	 </form>	
-	 <div style="text-align:right"><button type="button" onclick="$(this).parent().parent().hide(400)">Close</button></div>
-</div>
            
 <!-- FOOTER -->
    <div id="footer" style="text-align:right">

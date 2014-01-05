@@ -1,94 +1,66 @@
 <?php
 
-// August 12, 2013: Imports OPML
-// August 13, 2013: records order of notes, in order (int)
+// uploads a single file with a known bookid to update/replace it
 
-// BUGS
-// global tag not applied if no other tags on the line
-// replacing global tag begins with comma
-// trim trailing commas of tags
+error_reporting(E_ALL);
+error_reporting (E_ALL ^ E_NOTICE);
 
-
-$tabchar = chr(251); // represents a tab in processed opml files
+ini_set("display_errors", 0);
+ini_set('auto_detect_line_endings',true); // helps mac recognize unix line endings
 
 function debugprt($txt){
-  // prints debug info. 
-  $debug = true; 
-  if ($debug==true){
-    //echo("<p>" . $txt . "</p>");
-    // or 
+  // prints debug info. Lower the level the less prints. Higher = more inclusive
+  // give a high number to minor comments
+  $debug= true; 
+  if ($debug){
     error_log($txt);
+   echo "<p>" . $txt;
   }
 }
 
 
-debugprt("======================== ADD TO DB =======================");
+$bid = $_REQUEST["bookidsingle"];
+debugprt("bid=" . $bid);
 
-debugprt("<style>p{font-size:12px;font-family:Arial;}</style>");
+// DEBUG
+//$bid=8;
 
-// called as part of multi-file add, 
-$confupload = $_REQUEST['fname'];
-$project = $_REQUEST['project'];
-$user = $_REQUEST['user'];
+$dbh = mysql_connect("127.0.0.1","david","nn");
 
-//$formarray = _$REQUEST['dataFromForm'];
-//debugprt("PROJECT=" . $formarray['project'];
+	if (!mysql_select_db("noterio")) {
+		echo mysql_errno().": ". mysql_error ()."";
+		echo "bad db";
+		return;
+		}
 
-//----------- DEBUG ONLY!!!!!!!!
-//$confupload = array("test.opml");
-//$project="techdet";
-//$user="dw";
 
-debugprt("project: $project <br>user: $user");
-debugprt("<br>First item in upload array: $confupload[0]");
+debugprt("------------------------ SINGLE UPLOAD---------------");
 
-    // start up the database
-	$dbh = mysql_connect("127.0.0.1","david","nn");
-	$database_name = "noterio"; 
-	// is the database up? 
-	 if (!mysql_select_db($database_name)) {
-		   echo "<h2>++ ERROR with database \"$database_name\": " . mysql_errno().": ". mysql_error ()."</h2>";
-	   
-	   }
-    else {
-       debugprt("Starting parsing. Total number of items: " . sizeof($confupload));
-       
-       
-	$stringToReturn="<ul>";
-	//$form_fields = array_keys($HTTP_GET_VARS);
-	 
-    
-	
-	// -- FOR EACH FILE
-	
-	for ($i = 0; $i < sizeof($confupload); $i++) {
 	$originalorder = 0;
-	// get the file
-    $source = $confupload[$i];
-    debugprt( "Source=" . $source );
-    // -- CREATE ARRAY OF LINES for that file
+	$tmpnamepath = $_FILES['userfiles']['tmp_name'][0];
+	 debugprt("temppath: " . $tmpnamepath);
+	$realname =  $_FILES['userfiles']['name'][0];
+	debugprt("realname= " . $realname);
+    $ext = pathinfo($realname, PATHINFO_EXTENSION);
+    debugprt("ext=" . $ext);
     
-    // is it opml?
-    $ext = pathinfo($source, PATHINFO_EXTENSION);
-    debugprt( "Extension=" . $ext );
     // ---- IT's OPML so create the array of lines here
     if (strtoupper($ext) == "OPML"){
     	debugprt("IT's OPML");
         // include: http://stackoverflow.com/questions/2644199/pass-value-to-an-include-file-in-php
     	include "parseOPMLInclude.php";
-    	$source = "test.opml";
  		require_once 'parseOPMLInclude.php';
  		$cont = buildOPMLArray($source); 	// buildOPML is function in include file. 
  											//$source is var in that file too
  											// Returns a string of content
  											// chr(251) stands for number of indents
 
- 		debugprt("cont: ". $cont);
+ 		//debugprt("cont: ". $cont);
     }
     // not an OPML 
     else { 
-    	$cont = file_get_contents($source);
-    	//debugprt($cont);
+    	debugprt("Not OPML");
+    	$cont = file_get_contents($tmpnamepath);
     }
     
     
@@ -104,27 +76,23 @@ debugprt("<br>First item in upload array: $confupload[0]");
 	$needtocheckbook = true;
 	$continuingTag = "";
 	$ctr=0;
-   
-   // ------ FOR EACH LINE of the current file
+	
+    debugprt("Number of lines= " . count($farray));
+    
+   // ============= FOR EACH LINE of the current file ==============
 	foreach($farray as $lline) {
 		$ctr++;
 		 
 		 // count the numbers of tabs (inserted if from opml)
 		 $indentlevel = substr_count($lline , $tabchar );
-		 debugprt("<p>tabcount = " . $indentlevel);
+		 //debugprt("<p>tabcount = " . $indentlevel);
 		 // behead tabs
 		 $lline = substr($lline,$indentlevel);
 		  $lline = trim($lline); // trim it
-		// look for * indicating importance
-		if (substr($lline,0,1) == "*"){
-			$rating = "5";
-		}
-		else {
-			$rating = "-";
-		}
+		  //debugprt($ctr . ": " . $lline);
 		  //  skip it if empty or comment
 		 if (($lline != "") && (strpos($lline,"#") !== 0 )) { // strpos returns false if no match but gets weird. !== fixes it
-				 debugprt("$ctr>NEW LINE= $lline");
+				// debugprt("$ctr>NEW LINE= $lline");
 				$newbook = true;
 				 // are we in biblio?
 				if ((strpos($lline,":: BIBLIO") !== false) || (strpos($lline,"::BIBLIO") !== false)) {
@@ -144,7 +112,7 @@ debugprt("<br>First item in upload array: $confupload[0]");
 				if (($authline !== false) && ($inbib ==true)){
 				   $auth = substr($lline,strpos($lline,"=") + 1);
 				   $auth = addslashes(trim($auth));
-				   // debugprt("<p>author=" . $auth);
+				    debugprt("<p>author=" . $auth);
 				}
 				$titline = strpos($lline, "TITLE=");
 				if (($titline !== false) && ($inbib ==true)){
@@ -240,186 +208,22 @@ debugprt("<br>First item in upload array: $confupload[0]");
 				   $isbn = substr($lline,strpos($lline,"=") + 1);
 				   $isbn = addslashes(trim($note));
 				   // debugprt( "<p> isbn=" . $isbn);
-				} 	  		  
-						  
-		  
-			  if (!isset($author)){$author = "";}
-			  if (!isset($date)){$date = "";}
-			  if (!isset($city)){$city = "";}
-			  if (!isset($pub)){$pub = "";}
-			  if (!isset($type)){$type = "";}
-			  if (!isset($url)){$url= "";}
-			  if (!isset($translator)){$translator = "";}
-			  if (!isset($pages)){$pages = "";}
-			  if (!isset($issue)){$issue = "";}
-			  if (!isset($vol)){$vol = "";}
-			  if (!isset($journal)){$journal = "";}
-			  if (!isset($misc)){$misc = "";}
-			  if (!isset($nickname)){$nickname = "";}
-			  if (!isset($container)){$container = "";}
-			  if (!isset($note)){$note = "";}
-			  if (!isset($isbn)){$isbn = "";}
-			  if (!isset($rating)){$rating = "-";}
-			  if (!isset($dateUploaded)){$dateUploaded = "";}
-				// --- CREATE ENTRY
-				// if at the start of notes, coming out of Bib, and we have a title and author, check the Database
-				debugprt("innote:$innotes inbib:$inbib auth:$auth tit:$tit needtocheck:$needtocheck");
-				if (($innotes)  && ($auth !="") && ($tit != "") && ($inbib) && ($needtocheckbook == true)){
-				   $inbib = false; // turn off bibchecking
-				   $needtocheckbook = false; // stop checking after this
-				   // create timestamp
-				   $dateUploaded = date('Y-m-d H:i:s', time());
-				   
-					$ctr = $ctr + 1;
-				   //echo "<br>CTR=" . $ctr;
-				  debugprt("<br>Checking for book. Auth: " . $auth . " Title: " . $tit);;
-
-			   
-			   // look for an existing record with this title and author
-			   // if the book exists, then we want to update the record by
-			   //     	a. deleting the notes and tags
-			   //		b. creating a new record with that same bookid
-			   
-			   $bid = -1; // will be extracted if book exists
-					 $query = "SELECT bookid FROM books WHERE title='" . $tit . "' AND author='" . $auth . "'";					 
-					 $res = mysql_query($query,$dbh);	// returns an associative array, even if null
-					 // is the query ok?	If not, exit  
-					 if (!$res) {
-						  echo "<p>++Error with query: $query<p>";
-						 $resp = -1;
-						 return -1;
-					 }
-					  // if there's already a record for this auth and title, delete notes and tags
-					 if (mysql_num_rows($res) > 0) { // is there an existing row?
-						  debugprt("found record for book");
-						// get the book id
-						  while ($thearray = mysql_fetch_array($res)) {
-									debugprt("<p>-starting extraction");
-									extract ($thearray);
-									$bid = $bookid ;
-									// delete the book so it can be replaced
-									$deleteQuery = "DELETE from books WHERE bookid='" . $bid . "'";
-									$delresult = mysql_query($deleteQuery,$dbh);
-									debugprt("<p>-Deleted book with bookid=$bid with result: $delresult");
-						  }
-					   // delete notes and tags
-					   $deleteQuery = "DELETE from notes WHERE bookid='" . $bid . "'";
-					   $delresult = mysql_query($deleteQuery,$dbh);
-					   debugprt("<p>-Deleted notes for bookid=$bid with result: $delresult");		     
-					   $deleteQuery = "DELETE from tags WHERE bookid='" . $bid . "'";
-					   $delresult = mysql_query($deleteQuery,$dbh);
-					   debugprt("<p>-Deleted tags from bookid=$bid with result: $delresult");		
-					 }
-			   
-					  // create (or overwrite) the book entry
-				
-									// add to database if new book
-						if ($bid == -1){
-								  $query = "INSERT into books
-											  ( title,
-											  author,
-											  date,
-											  city,
-											  pub,
-											  type,
-											  url,
-											  translator,
-											  issue,
-											  vol,
-											  journal,
-											  misc,
-											  container,
-											  project,
-											  user,
-											  nickname,
-											  note,
-											  isbn 
-											  )
-									  values (
-											  '$tit',
-											  '$auth',
-											  '$ddate',
-											  '$city',
-											  '$pub',
-											  '$type',
-											  '$url',
-											  '$translator',
-											  '$issue',
-											  '$vol',
-											  '$journal',
-											  '$misc',
-											  '$container',
-											  '$project',
-											  '$user',
-											  '$nickname',
-											  '$note',
-											  '$isbn'
-											  );";
-										}
-								// insert if update, maintining old bookid
-						if ($bid !== -1) {
-							
-								  $query = "INSERT into books
-											  ( bookid,
-											  title,
-											  author,
-											  date,
-											  city,
-											  pub,
-											  type,
-											  url,
-											  translator,
-											  issue,
-											  vol,
-											  journal,
-											  misc,
-											  container,
-											  project,
-											  user,
-											  nickname,
-											  note,
-											  isbn 
-											  )
-									  values (
-									  		  '$bid',
-											  '$tit',
-											  '$auth',
-											  '$ddate',
-											  '$city',
-											  '$pub',
-											  '$type',
-											  '$url',
-											  '$translator',
-											  '$issue',
-											  '$vol',
-											  '$journal',
-											  '$misc',
-											  '$container',
-											  '$project',
-											  '$user',
-											  '$nickname',
-											  '$note',
-											  '$isbn'
-											  );";
-						}
-										
-						// do the insert
-						$res = mysql_query ($query,$dbh);
-					
+			}	
+			 	  		  
+					  
 	
-							  if (!$res) {
-									  echo "<p class='error'>++Problem with database after attempt to add book: " . mysql_errno().": ". mysql_error ()."</p>";
-									  debugprt("<p><b>++++ $tit NOT added</b>");
-									  return -1;
-								  } else {
-									  debugprt("$tit  added.<BR>");
-									  // get bookid from latest transaction
-									  $bid = mysql_insert_id();
-									  }
-		
-
-					 } // database is ok
-				  } // have author and title - create new entry
+				// --- IN NOTES
+				// if at the start of notes, coming out of Bib, and we have a title and author, check the Database
+		if (($innotes)  && ($auth !="") && ($tit != "") && ($inbib)){
+				   $inbib = false; // turn off bibchecking
+				   $needtocheckbook = false; // stop checking after this	
+					  
+			
+			  
+				debugprt("innote:$innotes inbib:$inbib auth:$auth tit:$tit needtocheck:$needtocheck");
+			
+				}
+					
 			
 			// ------------- ADD NOTES if we're in notes
 			if ($innotes){
@@ -432,13 +236,13 @@ debugprt("<br>First item in upload array: $confupload[0]");
 				if (stripos($lline, "//") === 0){
 					$lline = "";
 				}
-				debugprt("$ctr> Line after trim INNOTES=" . $lline);
+				//debugprt("$ctr> Line after trim INNOTES=" . $lline);
 				
 				// check for continuing tag: >> at beginning of line
 		  		if (stripos($lline, ">>") === 0){
 		  			$continuingTag = substr($lline,2) ;//. ",";
 		  			$continuingTag = trim($continuingTag, "\n\r\t ,.");
-		  			debugprt("FOUND continuingTag: $continuingTag line $ctr = $lline");
+		  			//debugprt("FOUND continuingTag: $continuingTag line $ctr = $lline");
 		  			// zero out the line
 		  			$lline = "";
 		 		}
@@ -450,7 +254,8 @@ debugprt("<br>First item in upload array: $confupload[0]");
 				  // get the page number if the slash isn't more than 12 in
 				  if ((strpos($lline,"/") !== false) && (strpos($lline, "/") < 12)) {
 				      $pagenumber = substr($lline, 0, strpos($lline, "/"));
-				      debugprt("$ctr> pagenumber = $pagenumber");
+				     // debugprt("$ctr> pagenumber = $pagenumber");
+				  	}
 				  	}
 				  
 				  //--- get note
@@ -470,24 +275,24 @@ debugprt("<br>First item in upload array: $confupload[0]");
 				    	}
 				    	// echo "<p>Endpos: " . $endpos;
 				   $cont = addslashes(substr($lline,$startpos + 1,$endpos - $startpos)); // get the note
-				   debugprt("<p>Cont after addslashes: $cont");
+				  // debugprt("<p>Cont after addslashes: $cont");
 				   
 				   //--- get tags
 					$tagstring = "";
 					if (strripos($lline, ">>") > 2){ // is there a tag? (Discount >> at start of line)
 					    $rawtags = (substr($lline, strripos($lline, ">>") + 2, strlen($lline)));
-					    debugprt( "RAWTAGS BEFORE= rawtags");
+					    //debugprt( "RAWTAGS BEFORE= rawtags");
 					    $rawtags = trim($rawtags, "\n\r\t ,.");
-					     debugprt( "RAWTAGS AFTER=$rawtags");
+					     //debugprt( "RAWTAGS AFTER=$rawtags");
 						$tagstring = addslashes($rawtags);
 						
 						// add continuing tag, if any
 						if ($continuingTag !== ""){
 							$tagstring = $tagstring . "," . $continuingTag;
 						}
-						debugprt( "<p>Tagstring found: " . $tagstring);
+						//debugprt( "<p>Tagstring found: " . $tagstring);
 						}
-					debugprt("<p>Pagenumber: " . $pagenumber . " content: " . $cont . " bookid: " . $bid .  " tagstring: " . $tagstring . "</p>");
+					//debugprt("<p>Pagenumber: " . $pagenumber . " content: " . $cont . " bookid: " . $bid .  " tagstring: " . $tagstring . "</p>");
 					
 		 		// -- record the original order	
 		 		$originalorder = $originalorder + 1;
@@ -528,13 +333,13 @@ debugprt("<br>First item in upload array: $confupload[0]");
 			   // if there's a continuing tag, push it into the array
 			   if ($continuingTag != "") {
 			   	$tagarray[] = $continuingTag;
-			   	debugprt("Added continuing tag: $continuingTag");
+			   	//debugprt("Added continuing tag: $continuingTag");
 			   }
 			   $valuestring = ""; // build a string of values
 			   // query = "insert into tags (tag, noteid, bookid) values (tag1,noteid,etc.),(tag2,noteid2,etc.);"
 			   foreach($tagarray as $tag){
 			   		$tag=trim($tag," \t\r\n\0,.");
-			   		debugprt("INSERTING TAG: |" . $tag . "| from tagstring: " . $tagstring);
+			   		//debugprt("INSERTING TAG: |" . $tag . "| from tagstring: " . $tagstring);
 			   		if (($tag != ",") && ($tag != "")){
 			      		$valuestring = $valuestring . "('" . $tag . "','" . $noteid . "','" . $bid . "'),";
 			    	}
@@ -554,15 +359,54 @@ debugprt("<br>First item in upload array: $confupload[0]");
 			         			debugprt("Tags added: " . $valuestring);
 			   						}				
 				} // tags
-			
-			}
+		
 			} // innote
-		} // each line
+		 } //line is not empty
 	
-   } // each file
+   } // each line
    
-   }// else
+   // --- update the new. Don't delete it, although it's being entirely overwritten except for bid
+				
+			 
+			   // overwrite the old info
+			   	  // notes just started so ke care of null bib info
+				  if (!isset($date)){$date = "";}
+				  if (!isset($city)){$city = "";}
+				  if (!isset($pub)){$pub = "";}
+				  if (!isset($type)){$type = "";}
+				  if (!isset($url)){$url= "";}
+				  if (!isset($translator)){$translator = "";}
+				  if (!isset($pages)){$pages = "";}
+				  if (!isset($issue)){$issue = "";}
+				  if (!isset($vol)){$vol = "";}
+				  if (!isset($journal)){$journal = "";}
+				  if (!isset($misc)){$misc = "";}
+				  if (!isset($nickname)){$nickname = "";}
+				  if (!isset($container)){$container = "";}
+				  if (!isset($note)){$note = "";}
+				  if (!isset($isbn)){$isbn = "";}
+				  if (!isset($dateUploaded)){$dateUploaded = "";}
+			   // update books SET pub="Oxford Univ. Press" , city="Oxfford" where bookid=8;
+								
+		$query = "UPDATE `books` SET `author`='$author',`pub`='$pub',`date`='$date',`city`='$city',`title`='$tit',`translator`='$translator',`article`='$article',`vol`='$vol',`issue`='$issue',`misc`='$misc',`type`='$type',`tags`='$tags',`journal`='$journal',`container`='$container',`url`='$url',`project`='$project',`user`='$user',`nickname`='$nickname',`pages`='$pages',`note`='$note',`isbn`='$isbn',`parent`='$parent',`dateUploaded`='$dateUploaded' WHERE 'bookid'=$bid";					 
+											 
+										
+							  $res = mysql_query ($query,$dbh);
+					
+		debugprt("RES=" . $res);
+							  if (!$res) {
+									  echo "<p class='error'>++Problem with database after attempt to add book: " . mysql_errno().": ". mysql_error ()."</p>";
+									  debugprt("<p><b>++++ $tit NOT added</b>");
+									  return -1;
+								  } else {
+									  debugprt("$tit  added.<BR>");
+									  // get bookid from latest transaction
+									  $bid = mysql_insert_id();
+									  
+									  }
+		
 
-  echo $stringToReturn;
+
+debugprt("------------------OUT OF Multi-----");
 
 ?>

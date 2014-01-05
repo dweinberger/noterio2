@@ -2,7 +2,7 @@
 
 error_reporting(E_ALL);
 error_reporting (E_ALL ^ E_NOTICE);
-//ini_set("display_errors", 1);
+ini_set("display_errors", 1);
 
 	$user = $_POST['user'];
 	$password = $_POST['password'];
@@ -19,7 +19,7 @@ error_reporting (E_ALL ^ E_NOTICE);
     date_default_timezone_set('America/New_York');;
     $currentdate = DATE("Y-m-d H:i:s");
     
-	$dbh = mysql_connect("127.0.0.1","david","nn");
+	$dbh = mysql_connect("localhost","david","nn");
 	(mysql_select_db("noterio"));
 	if (!mysql_select_db("noterio")){
 		echo "++ERROR: Could not connect database: noterio";

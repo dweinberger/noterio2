@@ -13,7 +13,7 @@ debugprt("------------------------ MULTIUPLOAD---------------");
 function debugprt($txt){
   // prints debug info. Lower the level the less prints. Higher = more inclusive
   // give a high number to minor comments
-  $debug= false; 
+  $debug= true; 
   if ($debug){
     error_log($txt);
   }
@@ -51,7 +51,7 @@ $s = "";
 $sd= "";
 $harray= array(); // array of html to return
 
-
+debugprt("Got array");
 // move them
 //path is set in private/etc/php.ini
 //$uploads_dir = 'uploadsToPhp'; // this folder needs to exist in folder where this php script lives
@@ -61,38 +61,9 @@ $harray= array(); // array of html to return
 foreach ($_FILES["userfiles"]["error"] as $key => $error) { 
     debugprt("key= " . $key);
 	// turn each file into an array of lines
-	
-	    // is it opml?
-	$sourcepath = $_FILES['userfiles']['name'][$key];
-    $ext = pathinfo($sourcepath, PATHINFO_EXTENSION);
-    debugprt( "Extension=" . $ext  . "filename: " . $sourcepath);
-    // ---- IT's OPML so create the array of lines here
-    if (strtoupper($ext) == "OPML"){
-    	debugprt("IT's OPML");
-        // include: http://stackoverflow.com/questions/2644199/pass-value-to-an-include-file-in-php
-    	//include "parseOPMLInclude.php";
-    	//$source = "test.opml";
- 		require_once 'parseOPMLInclude.php';
- 		$fcontent = buildOPMLArray($_FILES['userfiles']['tmp_name'][$key]); 	// buildOPML is function in include file. 
- 											//$source is var in that file too
- 											// Returns a string of content
- 											// chr(251) stands for number of indents
 
- 		debugprt("Raw OPML fcontent: ". $fcontent);
-    }
-    // not an OPML 
-    else { 
-    	  $fcontent = file_get_contents($_FILES['userfiles']['tmp_name'][$key]); // get the content of the file
-    }
-	
-	
-	
-	
-	
-
- 
+   $fcontent = file_get_contents($_FILES['userfiles']['tmp_name'][$key]); // get the content of the file
    $fcontent = preg_replace("/(\x0D|\x0A)/", "\n", $fcontent); // getthe line endings right - thank you, Andy Silva!
-   $fcontent = str_replace("\xfb","",$fcontent); // get rid of weird characters
    $farray = explode("\n", $fcontent); // turn file into an array of lines 
    //$farray = file($_FILES['userfiles']['tmp_name'][$key], FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
    debugprt("New file has " . count($farray) . " lines");
@@ -105,17 +76,9 @@ foreach ($_FILES["userfiles"]["error"] as $key => $error) {
    // go through each file looking for author and title
 	foreach($farray as $lline) {
 	      $ctr = $ctr  + 1;
-		  debugprt("CTR inside: " .$ctr . ":" . $lline);
-		   // are we in biblio?
-		  if ((strpos($lline,"::BIBLIO") !== false) || (strpos($lline,":: BIBLIO") !== false)) {
-		  	$inbib = true;
-		  	debugprt("IN BIB");
-		  	}
-		  //are we in notes?
-		  if ((strpos($lline,"::NOTES") !== false) || (strpos($lline,":: NOTES") !== false)) {
-		  $inbib = false;
-		  debugprt("IN NOTES");
-		  } 
+		  	debugprt("CTR inside: " .$ctr . ":" . $lline);
+		  if (strpos($lline,":: BIBLIO") !== false) {$inbib = true;} // are we in biblio?
+		  if (strpos($lline,":: NOTES") !== false) {$inbib = false;} //are we in notes?
 		  $authline = strpos($lline, "AUTHOR=");
 		  if (($authline !== false) && ($inbib ==true)){
 			 $auth = substr($lline,strpos($lline,"=") + 1);
@@ -171,14 +134,13 @@ foreach ($_FILES["userfiles"]["error"] as $key => $error) {
 	        $pathToTmp =  $_FILES["userfiles"]["tmp_name"][$key];
 	        $pathToMovedFile = "./uploadsToPhp/" . $_FILES['userfiles']['name'][$key];
 	        move_uploaded_file($pathToTmp, $pathToMovedFile);
-	      // debugprt("PathToTmp=" . $pathToTmp);
-	       //debugprt("PathToMovedFile=" . $pathToMovedFile);
+	       debugprt("PathToTmp=" . $pathToTmp);
+	       debugprt("PathToMovedFile=" . $pathToMovedFile);
 	        unset($linearray);
 	       // echo "AUTHOR: " . $auth . " CTR=" . $ctr;
 	        $linearray["bookid"] = $bid;
 	        $linearray["author"] = $auth;
 	        $linearray["title"] = $tit;
-	        debugprt("Title going into linearray: $tit");
 	        $linearray["fpath"] = $pathToMovedFile;
 	        // add this book's array to the overall array of books	  
 			$arrayofbooks[] = $linearray;  
@@ -191,9 +153,6 @@ foreach ($_FILES["userfiles"]["error"] as $key => $error) {
 
 echo json_encode($arrayofbooks);
 
-debugprt("Number of items in arrrayofbooks: " . sizeof($arrayofbooks));
-debugprt("first title in arrayofbooks: " . $arrayofbooks[0]["title"]);
-
-debugprt("------------------OUT OF Multi-----");
+debugprt("---------- exiting Multiupload---------");
 
 ?>

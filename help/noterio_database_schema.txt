@@ -1,0 +1,149 @@
+-- phpMyAdmin SQL Dump
+-- version 4.0.6
+-- http://www.phpmyadmin.net
+--
+-- Host: localhost
+-- Generation Time: Jan 04, 2014 at 03:24 PM
+-- Server version: 5.5.33
+-- PHP Version: 5.5.3
+
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET time_zone = "+00:00";
+
+--
+-- Database: `noterio`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `books`
+--
+
+CREATE TABLE `books` (
+  `bookid` int(11) NOT NULL AUTO_INCREMENT,
+  `author` text,
+  `pub` text,
+  `date` text,
+  `city` text,
+  `title` text,
+  `translator` text,
+  `article` text,
+  `vol` text,
+  `issue` text,
+  `misc` text,
+  `type` text,
+  `tags` text,
+  `journal` text,
+  `container` text,
+  `url` text,
+  `project` text,
+  `user` text,
+  `nickname` text,
+  `pages` text,
+  `note` text,
+  `isbn` text,
+  `parent` text,
+  `dateUploaded` date NOT NULL,
+  PRIMARY KEY (`bookid`)
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=37 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `notes`
+--
+
+CREATE TABLE `notes` (
+  `noteid` int(11) NOT NULL AUTO_INCREMENT,
+  `bookid` int(11) DEFAULT NULL,
+  `content` text,
+  `page` text,
+  `tagstring` text,
+  `rating` text,
+  `indent` int(4) NOT NULL,
+  `origorder` int(4) NOT NULL,
+  PRIMARY KEY (`noteid`),
+  FULLTEXT KEY `notes_index` (`content`)
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=774 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `playlistentries`
+--
+
+CREATE TABLE `playlistentries` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `title` text,
+  `user` text NOT NULL,
+  `project` text NOT NULL,
+  `noteid` int(11) NOT NULL,
+  `bookid` int(11) NOT NULL,
+  `modified` date DEFAULT NULL,
+  `visible` tinyint(1) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `noteidtitle` (`noteid`,`title`(100))
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=11 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `playlists`
+--
+
+CREATE TABLE `playlists` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `title` text,
+  `user` text,
+  `comment` text,
+  `created` date DEFAULT NULL,
+  `project` text,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=6 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `projects`
+--
+
+CREATE TABLE `projects` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `name` text,
+  `description` text,
+  `user` text,
+  `created` text,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=5 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `tags`
+--
+
+CREATE TABLE `tags` (
+  `tagid` int(11) NOT NULL AUTO_INCREMENT,
+  `tag` text,
+  `noteid` int(11) DEFAULT NULL,
+  `bookid` int(11) DEFAULT NULL,
+  PRIMARY KEY (`tagid`),
+  FULLTEXT KEY `tags_index` (`tag`),
+  FULLTEXT KEY `tag` (`tag`)
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=381 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `users`
+--
+
+CREATE TABLE `users` (
+  `userid` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `username` text,
+  `email` text,
+  `created` date DEFAULT NULL,
+  `password` text,
+  PRIMARY KEY (`userid`)
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=3 ;

@@ -1,12 +1,11 @@
 <?php
 
-  // mysqli version
-  // dec. 28, 2013
-  // see http://www.pontikis.net/blog/how-to-use-php-improved-mysqli-extension-and-why-you-should
+  // updates the notes from a single file
 	
     $project = $_POST['project'];
     $user = $_POST['user'];
-	$database_name =  "noterio";
+    $bookid = $_POST['bookid'];
+    
 	
  
     $dbh = new mysqli('127.0.0.1','david','nn','noterio');

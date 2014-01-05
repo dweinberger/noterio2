@@ -6,35 +6,24 @@ error_reporting (E_ALL ^ E_NOTICE);
 ini_set("display_errors", 0);
 ini_set('auto_detect_line_endings',true); // helps mac recognize unix line endings
 
-// i explained this: http://www.hyperorg.com/blogger/2012/09/09/beginner2beginner-javascript-multi-file-upload-php-to-process-it/
-
-debugprt("------------------------ MULTIUPLOAD---------------");
-
 function debugprt($txt){
   // prints debug info. Lower the level the less prints. Higher = more inclusive
   // give a high number to minor comments
-  $debug= false; 
+  $debug= true; 
   if ($debug){
     error_log($txt);
   }
 }
 
+debugprt("------------------------ MULTIUPLOAD---------------");
 
-$num_files = count($_FILES['userfiles']['name']);
-debugprt("Number of files: $num_files");
-
-//debugprt("isset:" . isset($_FILES['userfiles']);
-
-// if (!preg_match("/(txt|opml)$/",$_FILES['upload']['name'][$i])) {
-//         print "Text or OPML only...";
-//         return;
-//     }
+//echo "<p>isset:" . (isset($_FILES['userfiles']));
 
 
 $debugit=false;
 
 //echo "<p>Count:" .  count($_FILES['userfiles']);
-//debugprt("First file:" . $_FILES['userfiles']['name'][0];
+//debugprt("<p>First file:  $_FILES['userfiles']['name'][0]",2);
 
 //echo "<p>Error: " .  $_FILES['userfiles']['error'];
 
@@ -42,15 +31,14 @@ $debugit=false;
 
 //--------- debug
 
-foreach ($_FILES["userfiles"]["tmp_name"] as $key ) {
+//foreach ($_FILES["userfiles"]["tmp_name"] as $key ) {
    debugprt("file:" . $key);
-}
+
 //------------- END FOR debug
 
 $s = ""; 
 $sd= "";
 $harray= array(); // array of html to return
-
 
 // move them
 //path is set in private/etc/php.ini
@@ -59,68 +47,31 @@ $harray= array(); // array of html to return
    $arrayofbooks = array();
 // go through each file looking for auth and title to see if already in
 foreach ($_FILES["userfiles"]["error"] as $key => $error) { 
-    debugprt("key= " . $key);
+    debugprt($key);
 	// turn each file into an array of lines
-	
-	    // is it opml?
-	$sourcepath = $_FILES['userfiles']['name'][$key];
-    $ext = pathinfo($sourcepath, PATHINFO_EXTENSION);
-    debugprt( "Extension=" . $ext  . "filename: " . $sourcepath);
-    // ---- IT's OPML so create the array of lines here
-    if (strtoupper($ext) == "OPML"){
-    	debugprt("IT's OPML");
-        // include: http://stackoverflow.com/questions/2644199/pass-value-to-an-include-file-in-php
-    	//include "parseOPMLInclude.php";
-    	//$source = "test.opml";
- 		require_once 'parseOPMLInclude.php';
- 		$fcontent = buildOPMLArray($_FILES['userfiles']['tmp_name'][$key]); 	// buildOPML is function in include file. 
- 											//$source is var in that file too
- 											// Returns a string of content
- 											// chr(251) stands for number of indents
 
- 		debugprt("Raw OPML fcontent: ". $fcontent);
-    }
-    // not an OPML 
-    else { 
-    	  $fcontent = file_get_contents($_FILES['userfiles']['tmp_name'][$key]); // get the content of the file
-    }
-	
-	
-	
-	
-	
-
- 
+   $fcontent = file_get_contents($_FILES['userfiles']['tmp_name'][$key]); // get the content of the file
    $fcontent = preg_replace("/(\x0D|\x0A)/", "\n", $fcontent); // getthe line endings right - thank you, Andy Silva!
-   $fcontent = str_replace("\xfb","",$fcontent); // get rid of weird characters
    $farray = explode("\n", $fcontent); // turn file into an array of lines 
    //$farray = file($_FILES['userfiles']['tmp_name'][$key], FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
    debugprt("New file has " . count($farray) . " lines");
    $farray = array_map("trim",$farray);
    $inbib = false;
    $auth=""; $title = ""; $titline=false;
-   debugprt("file: " . $_FILES['userfiles']['name'][$key]);
+   if ($debugit){ echo "<br>In file: " . $_FILES['userfiles']['name'];}
    $ctr = 1;
    $needtocheckbook = true;
    // go through each file looking for author and title
 	foreach($farray as $lline) {
 	      $ctr = $ctr  + 1;
-		  debugprt("CTR inside: " .$ctr . ":" . $lline);
-		   // are we in biblio?
-		  if ((strpos($lline,"::BIBLIO") !== false) || (strpos($lline,":: BIBLIO") !== false)) {
-		  	$inbib = true;
-		  	debugprt("IN BIB");
-		  	}
-		  //are we in notes?
-		  if ((strpos($lline,"::NOTES") !== false) || (strpos($lline,":: NOTES") !== false)) {
-		  $inbib = false;
-		  debugprt("IN NOTES");
-		  } 
+		  if ($debugit){ echo "<p>CTR inside: " .$ctr . ":" . $lline;}
+		  if (strpos($lline,":: BIBLIO") !== false) {$inbib = true;} // are we in biblio?
+		  if (strpos($lline,":: NOTES") !== false) {$inbib = false;} //are we in notes?
 		  $authline = strpos($lline, "AUTHOR=");
 		  if (($authline !== false) && ($inbib ==true)){
 			 $auth = substr($lline,strpos($lline,"=") + 1);
 			 $auth = addslashes(trim($auth));
-			 debugprt( "<p>Author: " . $auth);
+			 if ($debugit){echo "<p>Auth: " . $auth;}
 		  }
 		  $titline = strpos($lline, "TITLE=");
 		  if (($titline !== false) && ($inbib ==true)){
@@ -144,7 +95,7 @@ foreach ($_FILES["userfiles"]["error"] as $key => $error) {
 			   // there is a database and we have auth and tit
 			   else {	
 					$query = "SELECT bookid FROM books WHERE title='" . $tit . "' AND author='" . $auth . "'";
-					debugprt("<p>QUERY= $query");
+					if ($debugit){echo "<p>QUERY= $query";}
 					//$query = "SELECT bookid FROM books WHERE title='" . $tit . "'";
 					$res = mysql_query($query) or die(mysql_error()); // do the query
 					if ($debugit){echo "<p>RES:" . $res;}
@@ -171,14 +122,13 @@ foreach ($_FILES["userfiles"]["error"] as $key => $error) {
 	        $pathToTmp =  $_FILES["userfiles"]["tmp_name"][$key];
 	        $pathToMovedFile = "./uploadsToPhp/" . $_FILES['userfiles']['name'][$key];
 	        move_uploaded_file($pathToTmp, $pathToMovedFile);
-	      // debugprt("PathToTmp=" . $pathToTmp);
-	       //debugprt("PathToMovedFile=" . $pathToMovedFile);
+	       debugprt("PathToTmp=" . $pathToTmp);
+	       debugprt("PathToMovedFile=" . $pathToMovedFile);
 	        unset($linearray);
 	       // echo "AUTHOR: " . $auth . " CTR=" . $ctr;
 	        $linearray["bookid"] = $bid;
 	        $linearray["author"] = $auth;
 	        $linearray["title"] = $tit;
-	        debugprt("Title going into linearray: $tit");
 	        $linearray["fpath"] = $pathToMovedFile;
 	        // add this book's array to the overall array of books	  
 			$arrayofbooks[] = $linearray;  
@@ -190,10 +140,5 @@ foreach ($_FILES["userfiles"]["error"] as $key => $error) {
 	 } // foreach notefile
 
 echo json_encode($arrayofbooks);
-
-debugprt("Number of items in arrrayofbooks: " . sizeof($arrayofbooks));
-debugprt("first title in arrayofbooks: " . $arrayofbooks[0]["title"]);
-
-debugprt("------------------OUT OF Multi-----");
 
 ?>

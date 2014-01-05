@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<title>test uploader</title>
+
+	<meta name="generator" content="BBEdit 10.5" />
+	<script type="text/javascript" src="../includes/jquery-1.8.0.min.js"></script>
+<script type="text/javascript" src="../includes/jquery-ui/js/jquery-ui-1.9.0.custom.min.js"></script>
+</head>
+
+<body>
+<div><span onclick="updateBookContents('8')">TEST update of bookid 8 singleuploadPart1.php....</span>
+ <div id="whichbook">999</div>
+ <div id="updateBookContentsDiv" class="updateBookContents">
+
+ 
+	 <!-- the form that does it -->
+	 <form  action='singleuploadPart1.php' enctype="multipart/form-data" id="singleuploadform">
+	 <input type="hidden" name="MAX_FILE_SIZE" value="10485760">
+	 <input type="hidden" name="bookidsingle" id="projectnameformsingle" value="8">
+		<input type="file" multiple="" name="userfiles[]" size="50"> 
+		<input type='button' value='Update the file' id="multiformbuttonsingle"> 
+	 </form>	
+</div>
+</div>
+
+<div id="status">status</div>
+
+
+<script language="javascript" type="text/javascript">
+// ---- set up single file update
+     $('#multiformbuttonsingle').click(function(){
+     	// get the bookid
+     	var bid = document.getElementById("whichbook").innerText;
+     	var fm = document.getElementById("singleuploadform");
+		var formData = new FormData(fm);
+		 //alert(projname);	
+		$.ajax({
+			url: 'scripts/singleuploadPart1.php',  //server script to process data
+			type: 'POST',
+			data: formData,
+			//Options to tell JQuery not to process data or worry about content-type
+			cache: false,
+			contentType: false,
+			processData: false,
+			success: function(res){
+			  $("#status").html("Clicked. " + res);
+			},
+			error: function(e){
+			  var er = e;
+			   $("#status").html("Error. " + er);
+			}
+     })	
+   });
+</script>
+</body>
+</html>

@@ -1,11 +1,8 @@
-
-
-
 /**
  * @author David Weinberger
  * self@evident.com
  */
-var revdate = "Jan. 28, 2013";
+var revdate = "Jan 2, 2014";
 
 
 // GLOBALS
@@ -16,14 +13,15 @@ var gProject = "";
 var gProjectarray = new Array(); // contains names and descriptions of every project for a user
 var gbooks = new Array(); // will fill with Book objects
 // for tagcloud
-  var tagThreshhold = 2;
+  var tagThreshhold = 1;
   var largestfont = 60;
   var smallestfont= 8;
 var gMaxTitleLength = 15; // max length of title to display in table of notes
+var gLevelSpacer = 20; // px to indent each level of an opml file
 
 
 // ------ Create book object
-function Book(title, bookid, author,pub,city,date,translator,issue, journal, vol, article,url,type,misc,tags,numberofnotes,pages, container,note,isbn){
+function Book(title, bookid, author,pub,city,date,translator,issue, journal, vol, article,url,type,misc,tags,numberofnotes,pages, container,note,isbn,parent,nickname,dateuploaded){
 	this.title = title;
 	this.bookid = bookid;
 	this.author = author;
@@ -44,6 +42,9 @@ function Book(title, bookid, author,pub,city,date,translator,issue, journal, vol
 	this.container=container; // chapter in a book?
 	this.note=note;
 	this.isbn=isbn;
+	this.parent=parent;
+	this.nickname=nickname;
+	this.dateuploaded = dateuploaded;
 }
 
 var gbook = new Book(); // holds current book globally
@@ -199,7 +200,10 @@ function init(){
 		}
  		
   });
-  
+      
+      // get the projects
+      buildProjectCombobox();
+    
 	// Get previous project, if any
 	cook = getCookie("project");
 	if (cook){
@@ -210,7 +214,7 @@ function init(){
 	  //loadNewProject(cook);   
 	}
     else { // no saved project
-    	alert("No project saved. Create new one.");
+    	alert("No prior session saved. Select a project to load.");
     	}
     	
     	
@@ -237,6 +241,37 @@ function init(){
 			}
      })	
    });
+   
+   // ---- set up single file update
+     $('#multiformbuttonsingle').click(function(){
+     	// get the bookid
+     	var bid = document.getElementById("whichbook").innerText;
+     	var fm = document.getElementById("singleuploadform");
+		var formData = new FormData(fm);
+		 //alert(projname);	
+		$.ajax({
+			url: 'scripts/singleuploadPart1.php',  //server script to process data
+			type: 'POST',
+			data: formData,
+			//Options to tell JQuery not to process data or worry about content-type
+			cache: false,
+			contentType: false,
+			processData: false,
+			success: function(res){
+			  $("#status").html("Clicked. " + res);
+			},
+			error: function(e){
+			  var er = e;
+			   $("#status").html("Error. " + er);
+			}
+     })	
+   });
+   
+   CKEDITOR.disableAutoInline = true;
+   // "display" scratchpad once to force ckeditor to load
+   addToScratchpad("HIDE");
+   
+  
 }
 
 function logMeIn(){
@@ -331,6 +366,14 @@ function registerMe(){
      document.getElementById("passwordReg").value = p;
      setCookie("user",u);
      init();
+}
+
+function reshowBookTable(){
+  // after leaving notes, display booktable
+  $('#bookstable').show(400); 
+  $('#notestablebtns').hide(400); 
+  $('#notestablediv').hide(400);
+  $('#showbookstable').hide(400);
 }
 
 function sendResetEmail(){
@@ -428,22 +471,23 @@ function createTopicBoxEntry(topicboxdiv,content,noteid,bookid){
  	delsp.setAttribute("title","Delete this entry");
  	
  	// append new content
- 	bibsp.appendChild(delsp); // append the delete button to the bib
+ 	sp.appendChild(delsp); // append the delete button to the note
  	p.appendChild(sp); // append the text span 
  	p.appendChild(bibsp); // append the bib span
  	topicboxdiv.appendChild(p); // append the entire p to the topicboxdiv
 
  	// make draggable
-      $(".topicboxp").draggable({
-      			  revert: true,
-      			  cursorAt: { left: 5 },
-                  helper: function() {
-					   var t = this.firstChild.innerHTML;
-					   if (t.length > 15) {t = t.substring(0,15) + "...";}
-					   var d = "<div class='dragIcon'>" + t + "</div>";
-					   return  $(d)[0];
-    		      }
-        });
+ 	makeDraggable(".topicboxp");
+      // $(".topicboxp").draggable({
+//       			  revert: true,
+//       			  cursorAt: { left: 5 },
+//                   helper: function() {
+// 					   var t = this.firstChild.innerHTML;
+// 					   if (t.length > 15) {t = t.substring(0,15) + "...";}
+// 					   var d = "<div class='dragIcon'>" + t + "</div>";
+// 					   return  $(d)[0];
+//     		      }
+//         });
  	return p
 }
 
@@ -457,8 +501,10 @@ function createNewTopicBox(firstTime){
 	 p.setAttribute("class","topicboxh1");
 	 var titsp = document.createElement("span");
 	 titsp.setAttribute("class","topicboxh1text");
+	 p.style.display="none";
 	 div.appendChild(p);
 	 p.appendChild(titsp);
+	 $(p).show(300);
 
 	 // add delete button
 	 sp = document.createElement("span");
@@ -717,6 +763,11 @@ function deleteTopicBox(w){
 	// get the title
 	var titdiv = $('.topicboxh1text',w.parentNode);
 	var 	tit = titdiv[0].innerHTML;
+	var r = window.confirm("Delete " + tit + "?");
+	if (r !== true){
+	   return;
+	}
+	
 	
 	// delete from database
 	var resp='';
@@ -743,8 +794,9 @@ function deleteTopicboxEntryFromX(w,nid){
   var par = w.parentNode;
   var parpar = par.parentNode;
   deleteTopicboxEntry(parpar,nid); // delete from database
+  $(parpar).hide(300,function(){parpar.parentNode.removeChild(parpar)});
   // delete from DOM
-  parpar.parentNode.removeChild(parpar);
+  ;
 
 }
 
@@ -839,7 +891,8 @@ function multiuploadConfirm(jsn){
 	var docspan = document.createElement("span");
 	docspan.innerHTML = "<p class='uploadclass'><b>NOTE:</b>Items with <u>no</u> check are <u>already</u> in the database. If you check a box and upload the new notes file, it will overwrite the old file's notes and tags.</p>";
 	mudiv.appendChild(docspan);
-
+	// make it visible
+	$(mudiv).show();
 	
 	// append form opening
 	var frm = document.createElement("form");
@@ -907,10 +960,30 @@ function uploadConfirmedFiles(){
    
 		var fm = document.getElementById("confirmupload");
 		var formData = new FormData(fm);
+		// formdata isn't working, so construct json object
+		var e = $("#confirmupload"); // get element
+		var hiddeninputs = $(e).find( ":hidden" ); // get hidden inputs
+		var dataFromForm = new Array({
+				name : hiddeninputs[1]['name'],
+				project : hiddeninputs[0]['value']
+				});
+		// get all the checked books
+		var booklist = $( "input[name$='fname[]']" );
+		var books = new Array();
+		for (var i=0; i < booklist.length; i++){
+		//<input type="checkbox" name="fname[]" class="uploadclass" value="./uploadsToPhp/test of opml.opml" checked="true">
+			var keyval = {
+				filepath : booklist[i]['value'],
+				checked : booklist[i]['checked']
+				}
+				books.push(keyval);
+		}
+		
+		dataFromForm.push({booklist : books});
 		 //alert(projname);	
 		$.ajax({
 			url: 'scripts/addToDB.php',  //server script to process data
-			type: 'POST',
+			type: 	'POST',
 			data: formData,
 			//Options to tell JQuery not to process data or worry about content-type
 			cache: false,
@@ -1106,27 +1179,27 @@ function loadNewProject(which){
 
 //------- SAVE ALL AS TEXT FILES
 function saveAllAsText(){
-		var foldername = prompt("Save all contents as text files into a folder on your drive? Folder name:");
+		//var foldername = prompt("Save all contents as text files into a folder on your drive? Folder name:");
 		
-		if (foldername ==""){
-			return
-		}
+		//if (foldername ==""){
+		//	return
+		//}
 		
 		// create the folder
-		var resp='';
-     $.ajax({
-        type: "POST",
-        url: "scripts/createfolder.php",
-		data: "foldername=" + foldername,
-		async: false,
-		success: function(dirresult){
-            resp = dirresult;
-            //alert("Attrib in getSqlAttribute= " + resp);
-        },
-        error: function(){
-            alert('Error in doesNoteExist function.');
-        }
-    })
+// 		var resp='';
+//      $.ajax({
+//         type: "POST",
+//         url: "scripts/createfolder.php",
+// 		data: "foldername=" + foldername,
+// 		async: false,
+// 		success: function(dirresult){
+//             resp = dirresult;
+//             //alert("Attrib in getSqlAttribute= " + resp);
+//         },
+//         error: function(){
+//             alert('Error in doesNoteExist function.');
+//         }
+//     })
 	
 	// get records from database and write them out
 	// go through gbooks array
@@ -1186,19 +1259,10 @@ function createNewProject(){
      loadNewProject(newname);
      // set mainselectlist pulldown to add notes
      document.getElementById("mainselectlist").value = "addnotes";
-     
+     $("#tagclouddiv").html("");
      }
 return
 	
-}
-
-//--------- MAKE EDITABLE
-//http://www.quirksmode.org/dom/cms.html
-
-function makeWholeDocumentEditable(){ // UNUSED
-	var et = document.getElementById('editabletest');
-	//et.sdditable='true'; 
-	document.designMode='on'; 
 }
 
 function changeRating(o){
@@ -1247,7 +1311,44 @@ function insertPlainTextBiblio(bid){
 	texte.value = s;
 }
 
+
+// --- Make a component editable
 function makeEditable(o){
+	// get here if element has an ondblclick=makeeditable
+	
+	if (o.nodeName==null){ // If it's the plus sign, it's not a
+		o = document.getElementById(o);
+	}
+	
+	// get attributes of the element
+	
+	// preserve first class
+	var class1 = $(o).attr('class').split(' ')[0];
+	var clss = class1 + " editing";
+	var gid = o.getAttribute("id");
+	var noteid = o.getAttribute("noteid");
+	var bid = o.getAttribute("bookid");
+	var html = $(o).html();
+	
+	// create text element
+	var editableText = document.createElement("textarea");
+	// fill in the text
+	$(editableText).val(html);
+	// set props
+	editableText.setAttribute("class", clss);
+	editableText.setAttribute("noteid", noteid);
+	editableText.setAttribute("bookid", bid);
+	editableText.setAttribute("id",gid);
+	editableText.setAttribute("onblur",  "saveEdit(this)")
+	
+	// replace the div with the textarea
+	$(o).replaceWith(editableText);
+	editableText.focus();
+	
+}
+
+
+function makeEditable_original(o){
 	// If it's the + in a tags field, then o = the id of the tag element
 	// otherwise o = the element
 	// So find out which it is
@@ -1256,7 +1357,7 @@ function makeEditable(o){
 		o = document.getElementById(o);
 	}
 	
-	// get attributes the element
+	// get attributes of the element
 	gclass = o.getAttribute("class");
 	var gid = o.getAttribute("id");
 	var noteid = o.getAttribute("noteid");
@@ -1290,7 +1391,10 @@ function makeEditable(o){
 	var y = document.createElement('TEXTAREA');
 	// apply class
 	if (clss !=""){
-		y.setAttribute("class",gclass+"editing");
+		
+		y.setAttribute("class", clss + " editing");
+		// need to force the width to stay the same. I don't know why.
+		y.style.width = o.style.width;
 		y.setAttribute("onblur",  "saveEdit(this)")
 		y.setAttribute('editable','YES');
 		y.setAttribute("noteid", noteid);
@@ -1308,29 +1412,46 @@ function makeEditable(o){
 
 
 function saveEdit(w) {
-	// used to just mark with a red dot
-	// now does the save
-	//var w = this;
-	var txtarea = w; 
-	// get noteid
-	var noteid = w.getAttribute("noteid");
-	// get content
-	var content = w.value;
-	updateNote(noteid, content, "");
+	// get here if element being edited has lost focus
 	
-	var y = document.createElement('P');
-	var z = txtarea.parentNode;
+	// get attributes of the element
+	var gid = w.getAttribute("id");
+	var noteid = w.getAttribute("noteid");
+	var bid = w.getAttribute("bookid");
+	var html = $(w).val();
+	
+	// create p
+	var newp = document.createElement("p");
+	// fill in the text
+	$(newp).html(html);
+	// set props
+	newp.setAttribute("noteid", noteid);
+	newp.setAttribute("bookid", bid);
+	newp.setAttribute("id",gid);
+	newp.setAttribute("onmouseover", "displayBiblioInfo(" + bid + ")");
+	newp.setAttribute("ondblclick","makeEditable(this)");
+	// preserve first class
+	var class1 = $(w).attr('class').split(' ')[0];
+	// if it's a note, make it draggable
+	if (class1 == "notecontentclass"){
+		var clss = class1 + " ui-draggable";
+	}
+	else {
+	    var clss = class1;
+	}
+	newp.setAttribute("class", clss); 
+	// replace the div with the textarea
+	$(w).replaceWith(newp);
 
-	y.innerHTML = txtarea.value;
-	y.setAttribute('class',gclass); 
-	y.setAttribute('id',gid); 
-	y.setAttribute("ondblclick", "makeEditable(this)");
-		gid=""; // init the globals
-		gclass="";
-	z.insertBefore(y,txtarea);
-	z.removeChild(txtarea);
-	//z.removeChild(document.getElementsByTagName('button')[0]);
 	editing = false;
+	
+	// update the database
+	if (class1 == "notecontentclass"){
+		updateNote(noteid,html,"!SAMETAGS!", "!SAMEPAGES!"); // keep the tags the same
+	}
+	// makedraggable
+	makeDraggable(".notecontentclass");
+
 }
 
 
@@ -1680,6 +1801,7 @@ function parseTags(tags){
     }
 
     // display tagcloud
+    $("#tagclouddiv").html(""); // delete existing cloud
     var s = "";
     var tagsize = -1;
     var tagname = "";
@@ -1687,7 +1809,7 @@ function parseTags(tags){
     var tagtemp = "";
     for (i = 0; i < tagarray.length; i++) {
         if (tagarray[i]["times"] >= tagThreshhold) {
-            s = s + "<font color='brown'>| </font>" + "<span id='" + tagarray[i]["tag"] + "' class='tagcloudstyle' title='Times used: " + tagarray[i]["times"] + "' onclick='displayTagsNotes(" + quote2 + tagarray[i]["tag"] + quote2 + ")'><span  class='tagclass' style='font-size:" + tagarray[i]["fontsize"] + "pt'>" + tagarray[i]["tag"] + " </span></span> ";
+            s = s + "<font color='brown'>&nbsp; </font>" + "<span id='" + tagarray[i]["tag"] + "' class='tagcloudstyle' title='Times used: " + tagarray[i]["times"] + "' onclick='displayTagsNotes(" + quote2 + tagarray[i]["tag"] + quote2 + ")'><span  class='tagclass' style='font-size:" + tagarray[i]["fontsize"] + "pt'>" + tagarray[i]["tag"] + " </span></span> ";
            // s = s + "<font color='white'>| </font>" + "<span id='" + tagnames[i] + "' class='tagcloudstyle' title='Times used: " + tagfonts[i] + "' onclick='tagclick(" + quote2 + tagnames[i] + quote2 + ")'><font style='font-size:" + tagfonts[i] + "pt'>" + tagnames[i] + " </font></span> ";
             
 			// s=s+tagname;
@@ -1735,7 +1857,7 @@ var barray = JSON.parse(resp);
 
 //alert(resp);
  buildNotesTableOutOfSqlResults(barray);
- insertNotesTableHeader("<span class='metatitle'>Tag Search:</span> " + tagstring);
+ insertNotesTableHeader("<p class='notestableheaderclass'><span class='metatitle'>Tag Search:</span> " + tagstring) + "</p>";
  } 
  
 //---------- TEXT SEARCH
@@ -1771,7 +1893,7 @@ var barray = JSON.parse(resp);
 	var barray = JSON.parse(resp);
 
  buildNotesTableOutOfSqlResults(barray);
- insertNotesTableHeader("<span class='metatitle'>Text Search:</span> " + querystring);
+ insertNotesTableHeader("<p class='notestableheaderclass'><span class='metatitle'>Text Search:</span> " + querystring + "</p>");
 	
 	return; 
 	
@@ -1814,14 +1936,14 @@ function displayTagsNotes(whichtag){
 	if (tab != null) {
 	  tab.innerHTML="";
 	}
-	
+	 var noterow;
 	 for (i=0; i < notearray.length; i++){
 		noterow = notearray[i];
 		noterow.content = trimSpacesAndLfs(noterow.content);
 		if (noterow != "") {  // if there's content to the note
 			// build noteline if the content isn't blank or "undefined"
 			if ((noterow.content != "") ) {
-					noteline = buildNoteLine(i,noterow.content,noterow.rating,noterow.page,noterow.tagstring,noterow.bookid,noterow.noteid,noterow.title);
+					noteline = buildNoteLine(i,noterow.content,noterow.rating,noterow.page,noterow.tagstring,noterow.bookid,noterow.noteid,noterow.title, noterow.indent,noterow.order);
 			}	
 		}
  	}
@@ -1835,7 +1957,7 @@ function displayTagsNotes(whichtag){
 
   
   //insert the header
-  insertNotesTableHeader("<span class='metatitle'>Notes for tag:</span> " + whichtag);
+  insertNotesTableHeader("<p class='notestableheaderclass'><span class='metatitle'>Notes for tag:</span> " + whichtag + "</p>");
     // invoke sortable
    $("#noteslisttable").tablesorter( {cancelSelection:true}); 
 }
@@ -1861,7 +1983,7 @@ for (i=0; i < barray.length; i++){
 	if ((noterow["content"] != "") && (noterow["content"] != "undefined") && (noterow["noteid"] != "")) {
 		var title = getTitleFromBookid(noterow["bookid"]);
 		var rating = ""; // no op for now
-	   noteline = buildNoteLine(i,noterow["content"],rating, noterow["page"], noterow["tag"],noterow["bookid"], noterow["noteid"], title);
+	   noteline = buildNoteLine(i,noterow["content"],rating, noterow["page"], noterow["tag"],noterow["bookid"], noterow["noteid"], title,noterow["indent"],noterow["order"]);
 	  // s = s + noteline;
 	}
 }
@@ -1954,20 +2076,32 @@ function addSaveAndDeleteNotesTableButtons(){
    p.innerHTML = ih;
 } 
 
-//------- ADD SELECTED NOTES TO NOTEPAD DIV
-function addToScratchpad(){
+//------- ADD SELECTED NOTES TO SCRATCHPAD DIV
+function addToScratchpad(display){
 
 	// display the scratchpad
+	var scratchpaddivcont= document.getElementById("scratchpaddivcontainer");
 	var scratchpaddiv= document.getElementById("scratchpaddiv");
-	scratchpaddiv.style.display="block";
+	if ((display=="SHOW") && (scratchpaddivcont.style.display !== "block")){
+		 	// make it editable by ckedit
+			var editor = CKEDITOR.inline( scratchpaddiv );
+	}
+	if (display != "HIDE"){
+	scratchpaddivcont.style.display="block";
+	}
+	else{
+		scratchpaddivcont.style.display="none";
+	}
 	// get the span for the text
 	var scratchpade= document.getElementById("scratchpadspan");
+	var okToList = true; // when looking for a dupe
 	
 	// walk through looking for selected elements
 	var fset = document.getElementById("notestable"); // get the notes div
 	//var inputs = fset.getElementsByTagName("input");
 	var inputs = fset.getElementsByClassName("notespandidcheckclass")
-	for (var i = 0; i<inputs.length; i++)
+	for (var i = 0; i<inputs.length; i++){
+		okToList= true; // reset
 	if ( inputs.item(i).checked==true){
 		var contentid = "notespanid" + i + "content"; // get content id
 		var contentel = document.getElementById(contentid); // get the content element
@@ -1980,46 +2114,79 @@ function addToScratchpad(){
 			var scratchid = "scratch" + noteid;
 			var noteexists = document.getElementById(scratchid);
 			if ((noteexists !=null) && (noteexists != 'undefined')) {
-				return;
+				okToList=false;
 			}
-			// create new element for the scratchpad
-			var scratchp = document.createElement("p");
-			scratchp.setAttribute("class","scratchpadclass");
-			scratchp.setAttribute("noteid",noteid);
-			scratchp.setAttribute("id",scratchid);
-			scratchp.innerHTML = content;	// create content
 			
-			// add bibliographic info as a span
-			// create bibliographic info for the footnote
-			var bid = getBookByID(bookid); // get number of book in gbooks array
-			var biblioinfo = createBiblioEntry(bid);
-			biblioinfo = biblioinfo.substr(3,biblioinfo.length); // remove <p>
+			if (okToList==true){
+				// create new element for the scratchpad
+				var scratchp = document.createElement("p");
+				scratchp.setAttribute("class","scratchpadclass");
+				scratchp.setAttribute("noteid",noteid);
+				scratchp.setAttribute("id",scratchid);
+				// append new
+				scratchpaddiv.appendChild(scratchp);
+				scratchp.innerHTML = content;	// create content
 			
-			// add page number 
-			var pndiv = document.getElementById("notespanid" + i + "page"); // gets td with p in it
-			if (pndiv != null) {
-				var p = pndiv.firstChild;
-				if (p !=null){
-					var pn = p.innerHTML;
+				// add bibliographic info as a span
+				// create bibliographic info for the footnote
+				var bid = getBookByID(bookid); // get number of book in gbooks array
+				var biblioinfo = createBiblioEntry(bid);
+				biblioinfo = biblioinfo.substr(3,biblioinfo.length); // remove <p>
+				// add span 
+				biblioinfo = " <span " + biblioinfo ;
+				// delete </p>
+				biblioinfo = biblioinfo.substr(0,biblioinfo.length -4);
+				
+			
+				// add page number 
+				var pndiv = document.getElementById("notespanid" + i + "page"); // gets td with p in it
+				if (pndiv != null) {
+					var p = pndiv.firstChild;
+					if (p !=null){
+						var pn = p.innerHTML;
+					}
+					if ((pn != "") && (pn !=null)) { biblioinfo = biblioinfo + " p." + pn;}
 				}
-				if ((pn != "") && (pn !=null)) { biblioinfo = biblioinfo + ", p." + pn;}
+			    biblioinfo = biblioinfo + "</span>";
+			
+				// create bib span
+				var bibspan = document.createElement("span");
+				bibspan.setAttribute("class","scratchpadfootnoteclass");
+				bibspan.innerHTML = biblioinfo;
+				scratchp.appendChild(bibspan); // append the bibspan to the note
+			
+				// get scratchpad div
+				//var scratchdiv = document.getElementById("scratchpaddiv");
+				
 			}
-			
-			
-			// create bib span
-			var bibspan = document.createElement("span");
-			bibspan.setAttribute("class","scratchpadfootnoteclass");
-			bibspan.innerHTML = biblioinfo;
-			scratchp.appendChild(bibspan); // append the bibspan to the note
-			
-			// get scratchpad div
-			var scratchdiv = document.getElementById("scratchpadspan");
-			// append new
-			scratchdiv.appendChild(scratchp);
 		}
 	
 	} // if checked
-	
+	}
+
+}
+
+//--- INSERT NOTE INTO SCRATCHPAD
+function insertScratchpadNote_UNUSED(){
+
+var spspan = $('#scratchpadspan')[0];
+var cont = $(spspan).html();
+//$(spspan).hide("200");
+var edboxdiv = document.createElement("div");
+var controldiv = document.createElement("div")
+controldiv.innerHTML="<input type='button' value='Save' onclick='saveScratchpadNote(this)'> <input type='button' value='Cancel' onclick='cancelScratchpadNpote()'>";
+edboxdiv.appendChild(controldiv);
+var edbox = document.createElement("textarea");
+edbox.setAttribute("class","scratchpadedit");
+edbox.height="70px";
+edbox.value = cont;
+edboxdiv.appendChild(edbox);
+spspan.parentNode.appendChild(edboxdiv);
+}
+function saveScratchpadNote(w){
+  $("scratchpadspan").html(w.value);
+  w.parentNode.removeChild(w);
+
 }
 
 function addToPlaylist(){
@@ -2043,12 +2210,13 @@ function saveScratchpad(){
   // saves scratchpad content as a new web page
 
       
-      var notediv = document.getElementById("scratchpadspan");
+      var notediv = document.getElementById("scratchpaddiv");
       var notecontent = notediv.innerHTML; // get the actual note content
       
       var rtfcontent = convertToRtf(notecontent);
       
-      return
+      return;
+      //----------- ends ---------
       
       var content = '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">';
       content = "\n<html>\n<head><title>" + "Notio scratchpad: " + gProject + "</title>";
@@ -2074,15 +2242,28 @@ function saveScratchpad(){
 
 function convertToRtf(h){
   // convert html to rtf
+  
+//   This works:
+//   {\rtf1\ansi
+//   {\pard\b Scratchpad Notes \par}
+//   {\pard\
+//   TEXT1 
+//   \i bib1\par}
+//   {\pard\
+//   TEXT2
+//   \i bib2\par}
+//   }
+  
+   var bs = String.fromCharCode(92); // backspace character
   		
 	// do the header
-	var b = "{\\rtf1\\ansi\\deff0\r";
+	var b = "{" + bs + "rtf1" + bs + "ansi\r";
 
 	
-	b = b + "{\\pard\\b Noterio Scratchpad for Project: " + gProject + "\\b\\par}";
+	b = b + "{" + bs + "pard" + bs + "b Noterio Scratchpad for Project: " + gProject + " " + bs + "par}\r";
 	
 	// get array of notes and foonotes
-	var  scratchdiv = document.getElementById("scratchpaddiv");
+	var scratchdiv = document.getElementById("scratchpaddiv");
 	var allnotes = scratchdiv.getElementsByClassName("scratchpadclass");
 	var allbibs = scratchdiv.getElementsByClassName("scratchpadfootnoteclass");
 
@@ -2094,8 +2275,8 @@ function convertToRtf(h){
 	for (i = 0; i < allnotes.length; i++) {
 
 	
-			b = b + "\r{\\pard \\li" + allnotes[i].firstChild.innerHTML + "\\par}";
-			b = b + "\r{\\pard \\li" + allbibs[i].innerHTML + "\\par}";			
+			b = b + "{" + bs + "pard " + bs + "\r" + $(allnotes[i].firstChild).text()  + "\r";
+			b = b  + bs + "i " + $(allbibs[i]).text() +  bs + "par}\r";			
 		
 	}	
 	
@@ -2106,10 +2287,10 @@ function convertToRtf(h){
 
             filename    : 'Noterio_ScratchPad_Notes.rtf',
             content     : b,
-            script      : 'download.php'
+            script      : 'scripts/download.php'
         });
  
-   
+  // alert("Noterio_ScratchPad_Notes.rtf");
     return
 }
 
@@ -2169,7 +2350,7 @@ function addNewNoteManually(){
 
 	
 	
-	buildNoteLine(RowCount,con,"",pages,tags,bid,"","");
+	buildNoteLine(RowCount,con,"",pages,tags,bid,"","","","");
 	
 	
 	
@@ -2344,38 +2525,40 @@ function exportGbooksToText(which, foldername){
 		var s ="";
 		var ss="";
 		
-		s = s + "\n:: BIBLIO";
+		s = s + "<br>:: BIBLIO";
 		if (gbooks[which].title =="undefined") {gbooks[which].title="";}
-		s = s + "\nTITLE=" + gbooks[which].title;
+		s = s + "<br>TITLE=" + gbooks[which].title;
 		if (gbooks[which].author =="undefined") {gbooks[which].author="";}
-		s = s + "\nAUTHOR=" + gbooks[which].author;
+		s = s + "<br>AUTHOR=" + gbooks[which].author;
 		if (gbooks[which].date =="undefined") {gbooks[which].date="";}
-		s = s + "\nDATE=" + gbooks[which].date;
+		s = s + "<br>DATE=" + gbooks[which].date;
 		if (gbooks[which].publisher =="undefined") {gbooks[which].publisher="";}
-		s = s + "\nPUB=" + gbooks[which].publisher;
+		s = s + "<br>PUB=" + gbooks[which].publisher;
 		if (gbooks[which].city =="undefined") {gbooks[which].city="";}
-		s = s + "\nCITY=" + gbooks[which].city;
+		s = s + "<br>CITY=" + gbooks[which].city;
 		if (gbooks[which].journal =="undefined") {gbooks[which].journal="";}
-		s = s + "\nJOURNAL=" + gbooks[which].journal;
+		s = s + "<br>JOURNAL=" + gbooks[which].journal;
 		if (gbooks[which].volume =="undefined") {gbooks[which].volume="";}
-		s = s + "\nVOL=" + gbooks[which].volume;
+		s = s + "<br>VOL=" + gbooks[which].volume;
 		if (gbooks[which].issue =="undefined") {gbooks[which].issue="";}
-		s = s + "\nISSUE=" + gbooks[which].issue;
+		s = s + "<br>ISSUE=" + gbooks[which].issue;
 		if (gbooks[which].tags =="undefined") {gbooks[which].tags="";}
-		s = s + "\nTAGS=" + gbooks[which].tags;
+		s = s + "<br>TAGS=" + gbooks[which].tags;
 		if (gbooks[which].type =="undefined") {gbooks[which].type="";}
-		s = s + "\nTYPE=" + gbooks[which].type;
+		s = s + "<br>TYPE=" + gbooks[which].type;
 		if (gbooks[which].url =="undefined") {gbooks[which].url="";}
-		s = s + "\nURL=" + gbooks[which].url;
+		s = s + "<br>URL=" + gbooks[which].url;
 		if (gbooks[which].misc =="undefined") {gbooks[which].misc="";}
-		s = s + "\nMISC=" + gbooks[which].c;
+		s = s + "<br>MISC=" + gbooks[which].misc;
 		if (gbooks[which].pages =="undefined") {gbooks[which].pages="";}
-		s = s + "\nPAGES=" + gbooks[which].pages;
+		s = s + "<br>PAGES=" + gbooks[which].pages;
 		if (gbooks[which].bookid =="undefined") {gbooks[which].bookid="";}
-		s = s + "\nBOOKID=" + gbooks[which].c;
+		s = s + "<br>BOOKID=" + gbooks[which].pages;
+		if (gbooks[which].parent =="undefined") {gbooks[which].parent="";}
+		s = s + "<br>BOOKID=" + gbooks[which].parent;
 		
-		s = s +  "\n#Autogenerated on " + Date();
-		s = s + "\n:: NOTES";
+		s = s +  "<br>#Autogenerated on " + Date();
+		s = s + "<br>:: NOTES";
 		
 	// get notes
 	     $.ajax({
@@ -2393,32 +2576,34 @@ function exportGbooksToText(which, foldername){
     })
 	
 	// write out the notes
-	// create arrray of lines
-	var narray = resp.split("<BR />"); // split whole response into array of lines
+	 var narray = JSON.parse(resp);
+   
     var i, farray, pg, tag,c,p, numstring, l, noteline;
-   //$resp = $noteid . "|" . $content . "|" . $rating . "|" . $bookid . "|" . $page . "|" . $tagstring . "|<BR />";v
     for (i=0; i < narray.length; i++){
-    	farray = narray[i].split("|"); //split line into fields
- 	    l = trimSpacesAndLfs(farray[1]);
-	    if (l != "") {  // if there's content to the note
+	    if (narray[i]["content"] != "") {  // if there's content to the note
 	       // look for page number 
-           pg = extractPageNumber(l);
-	       if (farray[4] != "") { // use databased page number if available
-			  pg = farray[4];
+	       if (narray[i]["page"] != "") { // use databased page number if available
+			  pg = narray[i]["page"] ;
 		    }
+		    else {pg="";}
 		// build noteline if the content isn't blank or "undefined"
-		if ((farray[1] != "") ) {
-			noteline = pg + "/" + " " + farray[1];
-			if (farray[5] != "") {
-				noteline = noteline + ">> " + farray[5];
+		if (narray[i]["content"] != "") {
+			noteline = pg + "/" + " " + narray[i]["content"];
+			if (narray[i]["tagstring"] != "") {
+				noteline = noteline + ">> " + narray[i]["tagstring"];
  			}
-			s = s + "\n\n" + noteline;
+			s = s + "<br>" + noteline;
 		}
 		
 	  }
 	} // for
 	
-	// write it
+	// write it into a new window
+	
+	var w = window.open();
+	$(w.document.body).html(s);
+	 
+	 return;
 	
 	var resp = "failure";
 	// prep title of book as title of text file, but without the .txt
@@ -2457,7 +2642,7 @@ function deleteSelectedRows(){
 	if ( inputs.item(i).checked==true){
 		//  the input set is getting the "save these notes" etc. buttons on the bottom)
 		if ((inputs.item(i).name.indexOf("notespanid" + i + "check")) > -1) {
-			deleteRow("notespanid" + i);
+			deleteNoteRow("notespanid" + i);
 		}
 	}
 	    
@@ -2495,7 +2680,7 @@ function batchTag(){
 			tage.innerHTML = tagstring;
 			// update the database
 			updateTags(tagstring,noteid,bookid);
-			updateNote(noteid,"",tagstring);
+			updateNote(noteid,"",tagstring,"!SAMEPAGES!");
 			}
 		}
 }
@@ -2677,6 +2862,7 @@ function dedupeTags(tgs)
  	  var displaydiv = document.getElementById("bookstable");
   displaydiv.style.display="none";
  }
+ 
  // ------- DISPLAY BOOK TITLES
  function displayAllBooks(){
 
@@ -2694,54 +2880,280 @@ function dedupeTags(tgs)
    		displayAllBooksStackview();
    		return
    }
-   $("#stackviewdiv").hide('slow');
-   $("#bookstable").show('slow');
-   
+  
    
 	
   // Get display div
   var displaydiv = document.getElementById("bookstable");
-  displaydiv.style.display="block";
-  var disp = "<p><form id='booksdisplayform'><table class='tablesorter' id='displayallbookstable'>";	
-  disp = disp + "<thead><tr id='booklistheader' class='booklistheader'><th></th><th><p  class='booklistheader'>Del</p></th><th><p  class='booklistheader'>Title</p></th><th><p   class='booklistheader'>Author</th><th><p  class='booklistheader'>Note</th><th><p  class='booklistheader'>Tags</th><th><p  class='booklistheader' title=\"Number of Notes\">#</th></tr></thead><tbody>"
+
+  
+  // del existing table objectif it exists
+  $('#booktableobj').remove();
+  // now create the table
+  var booktableobj = document.createElement("table");
+  booktableobj.setAttribute("id","booktableobj");
+  booktableobj.setAttribute("class", "tablesorter"); // sortable
+  // append the table
+  displaydiv.appendChild(booktableobj);
+  // create the header
+  var theader = document.createElement("thead");
+  var theader_tr = document.createElement("tr");
+  theader_tr.setAttribute("id","booklistheader");
+  theader_tr.setAttribute("class","booklistheader");
+  var th = document.createElement("th"); // btn col header - deprecated
+  th.setAttribute("class","header headerSortDown");
+  //theader_tr.appendChild(th)
+  th = document.createElement("th");// del col header
+  th.setAttribute("class","header"); 
+  var p = document.createElement("p");
+  p.setAttribute("class","booklistheader");
+  $(p).text();
+  th.appendChild(p);
+  theader_tr.appendChild(th);
+  th = document.createElement("th"); // title col header
+   th.setAttribute("class","header");
+  var p = document.createElement("p");
+  p.setAttribute("class","booklistheader");
+  $(p).text("Title");
+  th.appendChild(p);
+  theader_tr.appendChild(th);
+  th = document.createElement("th"); // author col header
+   th.setAttribute("class","header");
+  var p = document.createElement("p");
+  p.setAttribute("class","booklistheader");
+  $(p).text("Author");
+  th.appendChild(p);
+  theader_tr.appendChild(th);
+  th = document.createElement("th");// Nick col header
+   th.setAttribute("class","header"); 
+  var p = document.createElement("p");
+  p.setAttribute("class","booklistheader");
+  $(p).text("Nick");
+  th.appendChild(p);
+  theader_tr.appendChild(th);
+  th = document.createElement("th");// Parent col header
+   th.setAttribute("class","header"); 
+  var p = document.createElement("p");
+  p.setAttribute("class","booklistheader");
+  $(p).text("Parent");
+  th.appendChild(p);
+  theader_tr.appendChild(th);
+  th = document.createElement("th"); // Note col header
+   th.setAttribute("class","header");
+  var p = document.createElement("p");
+  p.setAttribute("class","booklistheader");
+  $(p).text("Note");
+  th.appendChild(p);
+  theader_tr.appendChild(th);
+  th = document.createElement("th");// Tags col header
+   th.setAttribute("class","header"); 
+  var p = document.createElement("p");
+  p.setAttribute("class","booklistheader");
+  $(p).text("Tags");
+  th.appendChild(p);
+  theader_tr.appendChild(th);
+  th = document.createElement("th");// Number of notes col header
+  th.setAttribute("class","header"); 
+  var p = document.createElement("p");
+  p.setAttribute("class","booklistheader");
+  $(p).text("#");
+  p.setAttribute("title","Number of notes");
+  th.appendChild(p);
+  theader_tr.appendChild(th);
+  // append the header row to the header
+  theader.appendChild(theader_tr);
+  // append header
+  booktableobj.appendChild(theader);
+
+  // create table body
+  var tbody = document.createElement("tbody");
+ 
  var numbnotes="";
  var tit="";
  for (i = 0; i < gbooks.length; i++) {
  	tit = gbooks[i].title;
  	if ((tit != "") && (tit != undefined)){
- 		spanid = gbooks[i].bookid; // use bookid as span id
-			noteline = "<tr class='booklistrowclass'><td>";
-			noteline = noteline + "<span id='" + spanid + "'><input type='button' value='show' onclick='displayBook(\"" + spanid + "\");'></span></td>";
-			//noteline = noteline +"<td><span id='" + spanid + "delete'><a href='#' style='text-decoration: none' onclick='deleteBook(\"" + spanid + "\");'>-</a></span>" +"</td>";
-			noteline = noteline +"<td><span id='" + spanid + "delete'><input type='button' style=\"font-size:8pt;color:#FF5F5D;\" title='Delete' value='X' onclick='deleteBook(\"" + spanid + "\");'></span></span>" +"</td>";
-			noteline = noteline + "<td class='booklisttitleclass'><p title='Bookid: " + gbooks[i].bookid + "'>" + gbooks[i].title;
-			noteline = noteline + "</td><td class='booklistauthorclass'><p>" + gbooks[i].author + "</p></td>";
-			noteline = noteline + "</td><td class='booklistauthorclass'><p class='booklistnoteclass'>" + gbooks[i].note + "</p></td>";	
-			if (gbooks[i].tags==null) {tags="";}else{tags=gbooks[i].tags;}
-			noteline = noteline + "</td><td class='booklistauthorclass'><p class='booklistauthorclass'>" + tags + "</p></td>";
-			if ((gbooks[i].numberofnotes == "undefined") || (gbooks[i].numberofnotes == null)) {
+ 		spanid = gbooks[i].bookid; // use bookid as span id;
+ 		// create row
+ 		var book_tr = document.createElement("tr");
+ 		book_tr.setAttribute("class","booklistrowclass");
+ 		
+ 		// btn col - deprecated
+ 		var btn_td = document.createElement("td");
+ 		var btn_span = document.createElement("span");
+ 		btn_span.innerHTML= "<input type='button' value='show' onclick='displayBook(\"" + spanid + "\");"
+ 		btn_td.appendChild(btn_span);
+ 		btn_td.setAttribute("class","displaybtnclass");
+ 		//book_tr.appendChild(btn_td);
+ 		
+ 		// delete col
+ 		var del_td = document.createElement("td");
+ 		del_td.innerHTML="<span id='" + spanid + "delete'><input type='button' style=\"font-size:8pt;color:#FF5F5D;\" title='Delete' value='X' onclick='deleteBook(\"" + spanid + "\");'></span></span>";
+		book_tr.appendChild(del_td);
+ 		
+ 		//  title col
+ 		var tit_td = document.createElement("td");
+ 		var datetime = gbooks[i].dateuploaded;
+		if ((datetime === null) || (datetime == "undefined")) {
+			datetime == " unrecorded";
+		}
+ 		tit_td.setAttribute("class","booklisttitleclass");
+ 		var tit_p = document.createElement("p");
+ 		tit_p.setAttribute("title","Bookid: " + gbooks[i].bookid);
+ 		tit_p.setAttribute("ondblclick","displayBook(" + gbooks[i].bookid +")");
+ 		$(tit_p).text(gbooks[i].title );
+ 		tit_td.setAttribute("id","titlecell" + gbooks[i].bookid);
+ 		tit_td.setAttribute("importUpdate",datetime); // record when it was updated
+ 		// update button
+ 		var newbtn = document.createElement("span");
+ 		var tit = htmlEncode(gbooks[i].title);
+		newbtn.setAttribute("onclick","importUpdate(" + gbooks[i].bookid + "," + "'" + tit + "','" + gbooks[i].dateuploaded + "')");
+		newbtn.innerText="Update";
+		newbtn.setAttribute("class","updateclass");
+		newbtn.setAttribute("title","Last updated: " + datetime);	
+		tit_p.appendChild(newbtn);
+		tit_td.appendChild(tit_p);
+		book_tr.appendChild(tit_td);
+ 
+		
+ 		// author col
+ 		var auth_td = document.createElement("td");
+ 		auth_p = document.createElement("p");
+ 		auth_td.setAttribute("class","booklistauthorclass");
+ 		$(auth_p).text(gbooks[i].author);
+ 		auth_td.appendChild(auth_p);
+ 		book_tr.appendChild(auth_td);
+ 		
+ 		// nick col
+ 		var nick_td = document.createElement("td");
+ 		nick_p = document.createElement("p");
+ 		nick_p.setAttribute("onclick", "displayAnthology(\"" + gbooks[i].nickname + "\")");
+ 		nick_td.setAttribute("class","nickclass");
+ 		$(nick_p).text(gbooks[i].nickname);
+ 		nick_td.appendChild(nick_p);
+ 		book_tr.appendChild(nick_td);
+ 		
+ 		// parent col
+ 		var par_td = document.createElement("td");
+ 		par_p = document.createElement("p");
+ 		par_p.setAttribute("onclick", "displayAnthology(\"" + gbooks[i].nickname + "\")");
+ 		par_td.setAttribute("class","parentclass");
+ 		if (gbooks[i].tags==null) {tags="";}else{tags=gbooks[i].tags;}
+ 		$(par_p).text(tags);
+ 		par_td.appendChild(par_p);
+ 		book_tr.appendChild(par_td);
+ 		
+ 		// note col
+ 		var note_td = document.createElement("td");
+ 		note_p = document.createElement("p");
+ 		note_p.setAttribute("onclick", "displayAnthology(\"" + gbooks[i].nickname + "\")");
+ 		note_td.setAttribute("class","booklistnoteclass");
+ 		$(note_p).text(gbooks[i].note);
+ 		note_td.appendChild(note_p);
+ 		book_tr.appendChild(note_td);
+ 		
+ 		// tags col
+ 		var tags_td = document.createElement("td");
+ 		tags_p = document.createElement("p");
+ 		tags_p.setAttribute("onclick", "displayAnthology(\"" + gbooks[i].nickname + "\")");
+ 		tags_td.setAttribute("class","booklisttagclass");
+ 		$(tags_p).text(gbooks[i].note);
+ 		tags_td.appendChild(tags_p);
+ 		book_tr.appendChild(tags_td);
+ 		
+ 		// number of notes col
+ 		var numb_td = document.createElement("td");
+ 		if ((gbooks[i].numberofnotes == "undefined") || (gbooks[i].numberofnotes == null)) {
 				numbnotes = "&nbsp;"
 			}
 			else {
 				numbnotes = gbooks[i].numberofnotes;
 			}
-			noteline = noteline + "<td  class='booklistauthorclass'><p>" + numbnotes + "</p></td></tr>";
-			disp = disp + noteline;
-		}
-	}
-	disp=disp + "</tbody></table>";
-  displaydiv.innerHTML=disp;
+ 		numb_p = document.createElement("p");
+ 		numb_p.setAttribute("onclick", "displayAnthology(\"" + gbooks[i].nickname + "\")");
+ 		numb_td.setAttribute("class","booklistnumbclass");
+ 		$(numb_p).text(numbnotes);
+ 		numb_td.appendChild(numb_p);
+ 		book_tr.appendChild(numb_td);
+ 		tbody.appendChild(book_tr);
+ 	
+ 		// spanid = gbooks[i].bookid; // use bookid as span id
+// 			noteline = "<tr class='booklistrowclass'><td>";
+// 			noteline = noteline + "<span id='" + spanid + "'><input type='button' value='show' onclick='displayBook(\"" + spanid + "\");'></span></td>";
+// 			//noteline = noteline +"<td><span id='" + spanid + "delete'><a href='#' style='text-decoration: none' onclick='deleteBook(\"" + spanid + "\");'>-</a></span>" +"</td>";
+// 			noteline = noteline +"<td><span id='" + spanid + "delete'><input type='button' style=\"font-size:8pt;color:#FF5F5D;\" title='Delete' value='X' onclick='deleteBook(\"" + spanid + "\");'></span></span>" +"</td>";
+// 			noteline = noteline + "<td class='booklisttitleclass'><p title='Bookid: " + gbooks[i].bookid + "' ondblclick='displayBook(" + gbooks[i].bookid +");'>" + gbooks[i].title;
+// 			noteline = noteline + "</td><td class='booklistauthorclass'><p>" + gbooks[i].author;
+// 			noteline = noteline + + "</p></td>";
+// 			noteline = noteline + "</td><td onclick='displayAnthology(\"" + gbooks[i].nickname + "\")' class='nickclass'><p>" + gbooks[i].nickname + "</p></td>";
+// 			noteline = noteline + "</td><td class='parentclass'><p>" + gbooks[i].parent + "</p></td>";
+// 			noteline = noteline + "</td><td class='booklistauthorclass'><p class='booklistnoteclass'>" + gbooks[i].note + "</p></td>";	
+// 			if (gbooks[i].tags==null) {tags="";}else{tags=gbooks[i].tags;}
+// 			noteline = noteline + "</td><td class='booklistauthorclass'><p class='booklistauthorclass'>" + tags + "</p></td>";
+// 			if ((gbooks[i].numberofnotes == "undefined") || (gbooks[i].numberofnotes == null)) {
+// 				numbnotes = "&nbsp;"
+// 			}
+// 			else {
+// 				numbnotes = gbooks[i].numberofnotes;
+// 			}
+// 			noteline = noteline + "<td  class='booklistnumberclass' bookid='" + gbooks[i].bookid + "'><p>" + numbnotes + "</p></td></tr>";
+// 			disp = disp + noteline;
+// 		}
+	} // if there's a title
+	} // for each book
+
+	
+	// append tbody to table
+	booktableobj.appendChild(tbody);
+    // displaydiv.innerHTML=disp;
   
    // invoke sortable
 
   //sorttable.makeSortable(document.getElementById("displayallbookstable"));
-  $("#displayallbookstable").tablesorter(); 
+  $(booktableobj).tablesorter(); 
 
    // set cookie
    setCookie("display","LIST");
    
-
+   // display the div
+	$("#stackviewdiv").hide('slow');
+   $(displaydiv).show('slow');
+   
+   return
  } 
+ 
+ //-------- SHOW ANTHOLOGY
+ function displayAnthology(nick){
+ 	// display parent and children
+ 	// nick is nickname of the parent with the nickname
+ 	if (nick == "") {return;} // ignore blanks
+ 	
+ 	var tbl = document.getElementById("bookstable");
+ 	//var alltds = $(tbl).find('.nickclass').text(); // gets all nick tds
+ 	var alltds = $(".nickclass");
+ 	// find the row with the nick we clicked on
+ 	var thenick =  -1;
+ 	for (var i=0; i < alltds.length; i++){
+ 		if ($.trim(alltds[i].innerText) == nick){
+ 			thenick = i;
+ 		}
+ 	}
+ 	
+ 	// get the row the nick is in
+ 	var nickrow = alltds[thenick].parentNode;
+ 	
+ 	// move the rows with the nick as the parent below the nickrow
+ 	var childcells =  $('.parentclass'); 
+ 	for (i=0; i < childcells.length; i++){
+ 		if ($.trim(childcells[i].innerText) == nick){
+ 			var childrow = childcells[i].parentNode;
+ 			$(childrow).insertAfter(nickrow);
+ 			
+ 		}
+ 	}
+ 	
+ 	 
+ }
  
  // ------ GET BOOK OBJ BY BOOKID
  function getBookByID(bid){
@@ -2838,8 +3250,14 @@ function displayAllBooksStackview(){
  for (i = 0; i < gbooks.length; i++) {
     autharray.length=0;
     autharray.push(gbooks[i].author);
-    wd = gbooks[i].numberofnotes + 5;
-    len = Math.floor((Math.random()*15)+25); 
+    // wd = page count
+    wd = ( gbooks[i].numberofnotes  * 40) + 50;
+    if (wd > 700) { wd = 700;} // max out page count at 700;
+    // len = pubdate
+    var pdate = gbooks[i].date;
+    if (pdate == null) {pdate = 1800;}
+    len = 10 + ((2020 - pdate) / 5);
+    //len = Math.floor((Math.random()*15)+25); 
     bks.push({"title":gbooks[i].title,
     	"creator": [gbooks[i].author],
     	"pub_date":gbooks[i].date, 
@@ -2863,7 +3281,7 @@ function displayAllBooksStackview(){
 	 parsvdiv.removeChild(svdiv);
 	 var newdiv = document.createElement("div");
 	 newdiv.setAttribute("id","stackviewdiv");
-	 newdiv.style.width="800px";
+	 newdiv.style.width="400px";
 	 newdiv.style.height="400px";
 	 parsvdiv.appendChild(newdiv);
 
@@ -2905,9 +3323,13 @@ $(".stack-item").click(function(w) {
 	displayBookNotes(bookid);
 	
 	// hide the list of books
-	$("#bookstable").hide(500,function(){});
-	// display button to bring back bookstable
-	$("#showbookstable").show();
+	var isChecked = $('#keepbooklistopen').attr('checked')?true:false;
+	if (isChecked == 0){
+		$("#bookstable").hide(500,function(){});
+		$("#stackviewcontainer").hide(500,function(){});
+		// display button to bring back bookstable
+		$("#showbookstable").show();
+	}
 	
 	
  }
@@ -3095,7 +3517,7 @@ function deleteBook(bid){
 	if (noterow != "") {  // if there's content to the note
 		// build noteline if the content isn't blank or "undefined"
 		if ((noterow.content != "") ) {
-				noteline = buildNoteLine(i,noterow.content,noterow.rating,noterow.page,noterow.tagstring,noterow.bookid,noterow.noteid,noterow.title);
+				noteline = buildNoteLine(i,noterow.content,noterow.rating,noterow.page,noterow.tagstring,noterow.bookid,noterow.noteid,noterow.title,noterow.indent,noterow.order);
 		}	
 	}
  }
@@ -3106,17 +3528,25 @@ function deleteBook(bid){
 
   
   //insert the header
-  insertNotesTableHeader("<span class='metatitle'>Notes from book:</span> " + title);
+  insertNotesTableHeader("<p class='notestableheaderclass'><span class='metatitle'>Notes from book:</span> " + title + "</p>");
     // invoke sortable
    $("#noteslisttable").tablesorter( {cancelSelection:true}); 
 	
-	
+	// make it all visible or not
+	$("#notestablediv").show(400);
+	// should we keep booklist open?
+	var isChecked = $('#keepbooklistopen').attr('checked')?true:false;
+	if (isChecked == 0){
+		$("#bookstable").hide(400);
+		$("#stackviewcontainer").hide(400);
+	}
  } 
  
 function insertNotesTableHeader(s){
-	var hdr = document.getElementById("notesfieldid");
+	$('#notesfieldid').html(s);
+	//var hdr = document.getElementById("notesfieldid");
 	//hdr.innerHTML="<p class='notestabletitleclass'>" + s + "</p>";
-	hdr.innerHTML = s;
+	//hdr.innerHTML = s;
 }
  
 function deleteNotesListTable(){
@@ -3127,7 +3557,7 @@ function deleteNotesListTable(){
 		tablediv.innerHTML="";
 		tablediv.setAttribute("id","notestable"); //replace the id
 	}
-	$('#notestablebrns').hide();
+	$('#notestablebtns').hide();
 	return
 }
  
@@ -3189,7 +3619,7 @@ function extractPageNumber(s){
   
  //--------- BUILD NOTE LINE
  
- function buildNoteLine(rownumb,cont,rating,pg,tags, bookid, noteid, title){
+ function buildNoteLine(rownumb,cont,rating,pg,tags, bookid, noteid, title, indent,order){
     // builds a note line and adds it to the table
     // create the table if it's the first note
     
@@ -3211,7 +3641,7 @@ function extractPageNumber(s){
  
     // is there a title? Yes, if coming from clicking on a tag. No if from book
     var maxcols;
-	((title != "") && (title != null)) ?  maxcols = 6 :   maxcols = 5;
+	((title != "") && (title != null)) ?  maxcols = 7 :   maxcols = 6;
 	
  
 		//var body = document.getElementById("notestable");
@@ -3221,7 +3651,7 @@ function extractPageNumber(s){
 		
 		var tbl = document.getElementById("noteslisttable");
 	   // for ease
-	   var MENU = 0, RATE= 1, NOTE = 2, PAGE=3, TAGS = 4, TITLE = 5;
+	   var MENU = 0, ORDER = 1, RATE= 2, NOTE = 3, PAGE=4, TAGS = 5, TITLE = 6;
 	  // ---- Set up Table
 		if (tbl == null) { // only do this once
 		    var tablediv = document.getElementById("notestable");
@@ -3234,7 +3664,7 @@ function extractPageNumber(s){
 		
 			
 			// create the header
-			var headings =  ['<span class="smalltext" onclick="hideNotesShowBooks()">X</span>', '<img src=\"images/star.jpeg\">' , 'Note', 'Page', 'Tag','Title'];
+			var headings =  ['<span class="smalltext" onclick="hideNotesShowBooks()">X</span>', '#','<img src=\"images/star.jpeg\">' , 'Note', 'Page', 'Tag','Title'];
 			var hdr = document.createElement("thead");
 			tbl.appendChild(hdr);
 			var hdrrow =  document.createElement("tr");
@@ -3247,8 +3677,28 @@ function extractPageNumber(s){
 				// create blank class
 				pcell.setAttribute("class","notestableheaderclass");
 				if (i == NOTE){ // if notes field
-					pcell.setAttribute("id", "notesfieldid");
+					cell.setAttribute("id", "notesfieldid");
 				}
+				if (i == MENU){
+					cell.setAttribute("style","width:" + 100 + "px");
+				}
+				if (i == ORDER){
+					cell.setAttribute("style","width:" + 30 + "px");
+				}
+				if (i == RATE){
+					cell.setAttribute("style","width:" + 40  + "px");
+				}
+				if (i == NOTE){
+					cell.setAttribute("style","width: 100%");
+				}
+				if (i == PAGE){
+					cell.setAttribute("style","width:" + 40 + "px");
+				}
+				if (i == TAGS){
+					cell.setAttribute("style","width:" + 60 + "px");
+				}
+				
+				
 				hdrrow.appendChild(cell);
 			}	
 		   hdr.appendChild(hdrrow);	 // insert the hdr row 
@@ -3271,7 +3721,6 @@ function extractPageNumber(s){
 		
 
 		
-		
 		// create 5 cells
 		var cell, celltext;
 		var row = document.createElement("tr");
@@ -3287,9 +3736,12 @@ function extractPageNumber(s){
 		// add the row to the end of the table body,
 		tblBody.appendChild(row);
 		// style the row
-		row.setAttribute("class", "booklistspan");
+		row.setAttribute("class", "notelistrow");
 		row.setAttribute("id", spanid);
 		
+		// calculate width of notes column
+		var tablewidth = $('#noteslisttable').width();
+		var notewidth = tablewidth - (100 + 30 + 40 + 40 + 60);
 		
 		
 		// set attributes and content
@@ -3300,21 +3752,36 @@ function extractPageNumber(s){
 			for (var j = 0; j < cellz.length; j++) {
 				cel = cellz[j];
 				// which column is it?
+				
+			
+				
 				// BUTTON and CHECKBOX
-				if (j==MENU){
+				if  (j==MENU){
 					var newp = document.createElement("p");
 					newp.setAttribute("bookid",bookid);
 					newp.setAttribute("noteid",noteid);
 					cel.appendChild(newp);
 					var ih = "<input type=\"checkbox\" name=\"" + spanid + "check\" class=\"notespandidcheckclass\" >";
-					//ih = ih + "<input type='button' value='-' onclick='deleteRow(\"" +  spanid +  "\")'>";
-					ih = ih + "<a href=\"javascript:void(null)\" class=\"noteinfobookidclass\" onclick='deleteRow(\"" +  spanid +  "\")'>Del</a>";
+					ih = ih + "<a href=\"javascript:void(null)\" class=\"noteinfobookidclass\" onclick='deleteNoteRow(\"" +  spanid +  "\")'>Del</a>";
 					newp.innerHTML= ih;
-					
-					
+										
 				}
+				
+				// ORIGINAL ORDER
+				if (j == ORDER) {
+					newp = document.createElement("p");
+					newp.setAttribute("bookid",bookid);
+					newp.setAttribute("noteid",noteid);
+					cel.appendChild(newp);
+					if (order == null) {order="";}
+					newp.innerHTML=order;
+					newp.setAttribute("class", "noteorderclass");
+					cel.setAttribute("id", spanid + "order");
+					cel.setAttribute("style","width:30px");
+				}
+				
 				 // RATING
-				if (j == RATE)  {
+				if (j == RATE){
 					var newp = document.createElement("p");
 					newp.setAttribute("bookid",bookid);
 					newp.setAttribute("noteid",noteid);
@@ -3324,29 +3791,62 @@ function extractPageNumber(s){
 					newp.setAttribute("id", spanid + "rating");
 					newp.setAttribute("ondblclick", "changeRating(this)");
 					newp.setAttribute("class", "noteratingclass");
+					cel.setAttribute("style","width:40px");
+					cel.setAttribute("class","noteratingcellclass");
 				}
 				 // NOTE
 				if (j == NOTE)  {
 					var newp = document.createElement("p");
 					newp.setAttribute("bookid",bookid);
 					newp.setAttribute("noteid",noteid);
-					newp.setAttribute("onMouseOver",  "displayBiblioInfo(" + bookid + ")");
-					cel.appendChild(newp);
-					newp.innerHTML=cont;
 					newp.setAttribute("id", spanid + "content");
+					newp.setAttribute("onMouseOver",  "displayBiblioInfo(" + bookid + ")");
+					newp.innerHTML= cont;
 					newp.setAttribute("ondblclick", "makeEditable(this)");
 					newp.setAttribute("class", "notecontentclass");
+					// var leftmarg = indent * gLevelSpacer;	
+					var reducelengthpercentage = indent * 5;	
+					if (reducelengthpercentage > 50){
+						reducelengthpercentage = 50;
+					}
+					//newp.setAttribute("style","margin-left:" + leftmarg + "px");
+					//newp.setAttribute("style","width:" + (notewidth - (20 + leftmarg)) + "px");
+					newp.setAttribute("style","width:" + (100-reducelengthpercentage + "%"));
+					cel.appendChild(newp);
+					cel.setAttribute("class","notetd");
+					// create a span for padding
+					var pad = document.createElement("span");
+					pad.innerHTML= "&nbsp;"; // div needs content to have width
+					var headerwidth = $(cel).width()
+					var padwide =   (headerwidth * reducelengthpercentage) / 100;
+					
+					//$(pad).width(reducelengthpercentage + "%");
+					$(pad).css({
+						'width' : padwide + "px",
+						'background-color': 'red'
+						})
+					// make the td parent into a special class so can right align it
+					//var tdpar = cel.parentNode();
+					//$(cel).css({"line-height": 1.0 })
+					//$(newp).addClass("td_right_align");
+					//pad.setAttribute("style","background-color:red");
+					//pad.setAttribute("style","width:" + (reducelengthpercentage - 1) + "%");
+					//var newpcont = newp.innerHTML;
+					//newp.innerHTML = "<span style='backgroundColor: #FF0000,width:" + padwide + "%'>&nbsp;</span>" + newpcont;
+					
+					
 				}
 				// PAGENUMBER
-				if (j == PAGE) {
+				if (j ==  PAGE) {
 					newp = document.createElement("p");
 					newp.setAttribute("bookid",bookid);
 					newp.setAttribute("noteid",noteid);
 					cel.appendChild(newp);
 					newp.innerHTML=pg;
-					newp.setAttribute("ondblclick", "makeEditable(this)");
+					newp.setAttribute("onClick", "editPageNumbers('" + spanid + "page')");
 					newp.setAttribute("class", "notepageclass");
 					cel.setAttribute("id", spanid + "page");
+					cel.setAttribute("style","width:40px");
 				}
 				// TAGS
 				if (j == TAGS)  {
@@ -3368,8 +3868,9 @@ function extractPageNumber(s){
 					//newp.setAttribute("ondblclick", "makeEditable(this)");
 					newp2.setAttribute("class", "notetagclass");
 					newp2.setAttribute("id", spanid + "tags");
+					cel.setAttribute("style","width:60px");
 				}
-				// TITLE
+				// TITLE - used when click on a tag
 				if (j == TITLE)  {
 					if (title=="") {title="-";}
 					newp = document.createElement("span");
@@ -3378,10 +3879,11 @@ function extractPageNumber(s){
 					cel.appendChild(newp);
 					newp.innerHTML=abbrevtitle;
 					newp.setAttribute("onClick", "displayBookNotes('" + bookid + "')");
-					newp.setAttribute("title",fulltitle); // hover to display full book
+					newp.setAttribute("class","notetitleclass");
+					newp.setAttribute("title",fulltitle + " bookid:" + bookid); // hover to display full book
 				}
 				// BOOKID -- UNUSED
-				if (j == 6)  {
+				if (j == 116)  {
 					newp = document.createElement("p");
 					cel.appendChild(newp);
 					newp.innerHTML="<span title='" + getTitleFromBookid(bookid) + "'>" + "db:" + bookid + "</span>";
@@ -3393,7 +3895,7 @@ function extractPageNumber(s){
 					//cel.setAttribute("id", spanid + "bookid");
 				}
 				// NOTEID -- UNUSED
-				if (j == 7)  {
+				if (j == 117)  {
 					newp = document.createElement("p");
 					cel.appendChild(newp);
 					newp.innerHTML="n:" + noteid;
@@ -3407,19 +3909,75 @@ function extractPageNumber(s){
 				}
 			} // gone through an entire row
 			
-	 // make draggable
-      $(".notecontentclass").draggable({
+	 // make draggable   
+	 makeDraggable(".notecontentclass");
+	}
+	
+function importUpdate(bid,title, dateuploaded){
+	// import new notes to update an existing book
+	// titles were encoded with html entities in the button
+	
+	// add the text
+	var s = "<p class='updatetext'>Update " + title + "? <br>This will replace the current notes with the notes you upload. It cannot be undone.</p>";
+	s = s + "<p>Time last imported: " + dateuploaded;
+	$("#updatebooktext").html(s);
+	// substitute the bid in the overlay form
+	var el = document.getElementById("projectnameformsingle");
+	$(el).attr("value",bid);
+	
+	// position it by getting the position of a cell in the  calling row
+	var cellid = "#titlecell" + bid;
+	var pos = $(cellid).offset();
+	// get update button
+	var btn = $("#titlecell .updateclass");
+	var tpos = pos.top + 25;
+	var lpos = pos.left + $(cellid).width();
+	var overly  = document.getElementById("updateBookContentsDiv");
+	
+	//$("#updateBookContentsDiv").offset({ top: offset.top, left: offset.left});
+	$(overly).css("position","absolute");
+	$(overly).css("top",tpos);
+	$(overly).css("left",lpos);
+	//$(overly).offset(pos);//{ top: 100, left: 0}
+
+	// show the overlay div
+	$("#updateBookContentsDiv").show(400);
+}
+
+function htmlEncode(s){
+	var rr=s;
+	var r = s.replace(/'/g , "&#39;");
+	rr = r.replace(/"/g , "&quot;");
+	return rr;
+}
+
+	
+function makeDraggable(selecter){
+	// s elector = something like ".notecontentclass"
+	if (selecter == ".topicboxp") {
+		var hand = "entry...";
+	}
+	else {
+		var hand = this.innerHTML;
+	}
+      $(selecter).draggable({
                 revert: true,
                 cursorAt: { left: 5 },
                 helper: function() {
+                  if (selecter == ".topicboxp"){
+                  	var t = "Entry...";
+                  }
+                  else{
                   var t = this.innerHTML;
+                  }
                   if (t.length > 15) {t = t.substring(0,15) + "...";}
                   var d = "<div class='dragIcon'>" + t + "</div>";
     		return $(d)[0];
     		}
         });
 		
-	}
+
+}
 
 function hideNotesShowBooks(){
 	ShowHideDiv('notestablediv'); 
@@ -3468,9 +4026,27 @@ function editTags(w){
 	var opp = o.previousSibling;
 	var noteid = opp.getAttribute("noteid");
 	var bookid = opp.getAttribute("bookid");
-	updateNote(noteid,"",newtags);
+	updateNote(noteid,"",newtags, "!SAMEPAGES!");
 	// update the tag table
 	updateTags(newtags,noteid,bookid);
+}
+
+function editPageNumbers(w){
+    // gets content from pagenumber field in note row and lets it be edited
+    // w = id of the td with the page in it
+	
+	// then get the p
+	var o = $('#' + w + " p")[0];
+	var cont=$(o).html();
+	
+	var newpages = prompt("Enter page numbers", cont);
+	o.innerHTML=newpages;
+	
+	var noteid = o.getAttribute("noteid");
+	var bookid = o.getAttribute("bookid");
+	updateNote(noteid,"","!SAMETAGS!",newpages);
+	// update display
+	
 }
 
 	
@@ -3511,59 +4087,7 @@ function unEscapeIt(s){
 	
 	
  }
- function buildNoteLine_html(c,cont,pg,tg, bookid, noteid, title){
-	// builds the textareas for a single line of note display
-	
-	if (pg=="") pg="[pg]";
-	if (tg=="") tg="[tag]";
-	var fulltitle=getTitleFromBookid(bookid);
-	// abbreviate title
-	if ((title != null) && (title.length > 10)) {
-		var abbrevtitle = title.substring(0,10) + "...";
-	}
-	else {abbrevtitle = fulltitle;}
-	var spanid=""
-	var disp="";
-	// ROW=new-button-content-pg-tags-title-bookid-noteid
-	// create unique spanid
-	spanid = "notespanid" + c; // id for span
-	// start the row
-	disp=disp + "<tr class='booklistspan' id='" + spanid + "'>";
-	// is it new?
-	if ((noteid=="") || (noteid == "undefined")) {
-		disp = disp + "<td id='" + spanid + "oldnew'>" + getOldNewDisplayObject("UNSAVED") + "</td>";
-	}
-	else {disp = disp + "<td id='" + spanid  + "oldnew'>" + getOldNewDisplayObject("SAVED") + "</td>";}
-	// add delete button
-	  disp = disp + "<td><p><input type='button' value='-'";
-	  disp = disp + " onclick='deleteRow(\"" +  spanid +  "\")'></p></td>";
-	// content
-		disp = disp + "<td  class='notecontentclass'>";
-		disp= disp + "<p id='" + spanid  + "content' class='notecontentclass' editable='YES' ondblclick='makeEditable(this)'>" 
-		disp = disp + cont;
-		disp = disp + "</p></td>";
-	// page number
-		disp = disp + "<td>";
-		var pagespanid = spanid + "page";
-		disp = disp + "<p id='" + pagespanid + "'";
-	    disp = disp + " class='notepageclass'  editable='YES' ondblclick='makeEditable(this)'>" + pg;
-		disp = disp  + "</p></td>";
-	// tags
-		disp = disp + "<td><p id='" + spanid  + "tag' class='notetagclass'  editable='YES' ondblclick='makeEditable(this)'>" + tg;	
-		disp = disp	 + "</p></td>";
-	// title
-		disp=disp + "<td><p class='notebookclass' title='"  + fulltitle + "'>" + abbrevtitle + "</p></td>";
-	// book id
-		disp=disp + "<td><p id='" + spanid + "bookid' class='noteinfobookidclass'>b:" + bookid + "</p></td>";
-	// note id
-		disp=disp + "<td><p id='" + spanid + "noteid' class='noteinfonoteidclass'>/n:" + noteid + "</p></td>";
-	// end row
-		disp=disp + "</tr>";
-	
-	return disp;
-	
-	
-}
+
 
 // -------- RETURN DISPLAY OBJECT FOR [OLD] [NEW]
 function getOldNewDisplayObject(w){
@@ -3758,18 +4282,19 @@ function displayOldOrNew(oldnew, eid){
 }
   
 // -------------- DELETE ROW
-function deleteRow(which){
-	
-	// get bookid
-	var noteide = document.getElementById(which);
-	var noteid = noteide.innerHTML;
-	var p = noteid.indexOf("n:");
-	noteid = noteid.substring(p+2,noteid.length); 
-	noteid = noteid.substring(0, noteid.indexOf("<"));
+function deleteNoteRow(which){
 	
 
-  var e = document.getElementById(which);
-  e.style.display="none";
+    // get row
+  	var e = document.getElementById(which);
+  	// get 3rd child, which is the td
+  	var notetd = e.childNodes[3];
+  	// get actual span
+  	var notespan = notetd.childNodes[0];
+  	// get noteid
+  	var noteid = notespan.getAttribute("noteid");
+    // hide the r ow
+    e.style.display="none";
 
 // do the deletion
      var resp = "failure";
@@ -3790,7 +4315,18 @@ function deleteRow(which){
 	
     
   var res=resp;
-
+  
+  // decrement the notes counter
+  // get bookid
+  var bookid = notespan.getAttribute("bookid");
+  // get gbook
+  var i = getIndexFromBookid(bookid);
+  gbooks[i].numberofnotes = gbooks[i].numberofnotes - 1;
+  // update the bookstable which is the one that's shown
+  // get the element that has the number
+  var numbel = $('.booklistnumberclass[bookid="' + bookid + '"]')[0];
+ // var numbel = $(tab'[bookid="' + bookid + '"]');
+  numbel.innerText = gbooks[i].numberofnotes;
 	
 }
 
@@ -3920,9 +4456,10 @@ function addNewBook(whichway){
 	}
 	
 //-------- UPDATE NOTE
-function updateNote(noteid,content,tags){
+function updateNote(noteid,content,tags,pages){
+	// use "!SAMETAGS! for tagstring if you don't want to a lter the tags
 	
-	var param="noteid=" + noteid + "&content=" + content  + "&tags=" + tags + "&gdatabase=" + gdatabase;
+	var param="noteid=" + noteid + "&content=" + content  + "&tags=" + tags + "&gproject=" + gProject + "&page=" + pages;
 	 // note: php ignores empty tag string
 	 var resp = "Failure at updateNote";
      $.ajax({
@@ -3932,6 +4469,7 @@ function updateNote(noteid,content,tags){
 		async: false,
 		success: function(dirresult){
             resp = dirresult;
+            //alert("line 4019 result:" + resp);
         },
         error: function(e){
            resp = e;
@@ -3939,6 +4477,8 @@ function updateNote(noteid,content,tags){
     }) 
 }
 
+
+// ---- UPDATE TAGS
 function updateTags(tagstring, noteid,bookid){
 	
 	var param="noteid=" + noteid + "&tagstring=" + escape(tagstring)  + "&bookid=" + bookid + "&project=" + gProject + "&user=" + gUsername;
@@ -4192,6 +4732,7 @@ return news;
 
 
 function trimSpacesAndLfs(w){
+	// also commas
 	if ((w=="") || (w==null) || (w.length == null)){ // skip if empty or not a string
 		return w;
 	}
@@ -4199,10 +4740,10 @@ function trimSpacesAndLfs(w){
     var c = "";
     dunn = false;
     var ww = w;
-    while ((ww.charAt(0) == " " || ww.charAt(0) == "\r" || ww.charAt(0) == "\n") && ww != "") {
+    while ((ww.charAt(0) == " " || ww.charAt(0) == "\r" || ww.charAt(0) == "\n" || ww.charAt(0) == ",") && ww != "") {
         ww = ww.substring(1, ww.length);
     }
-    while ((ww.charAt(ww.length - 1) == " " || ww.charAt(ww.length - 1) == "," || ww.charAt(ww.length - 1) == "\r" || ww.charAt(ww.length - 1) == "\n") && ww.length > 0) {
+    while ((ww.charAt(ww.length - 1) == " " || ww.charAt(ww.length - 1) == "," || ww.charAt(ww.length - 1) == "\r" || ww.charAt(ww.length - 1) == "\n" || ww.charAt(ww.length - 1) == ",")  && ww.length > 0) {
         ww = ww.substring(0, ww.length - 1);
     }
     return ww;
@@ -4235,133 +4776,7 @@ function showInfo(w){
   }  
 }
 
-/*
    
 
 
-<!--   =============  SET UP ======== 
-
-// IN FIREFOX, set signed.applets.codebase_principal_support to true (about:config)
-// IN OS X edit /private/etc/apache2/httpd.conf (as sudo)
-// UNCOMMENT: 
-// # AddHandler cgi-script .cgi
-// AND ADD
-//  AddHandler cgi-script .pl
-// Uncomment: 
-// # LoadModule php5_module libexec/httpd/libphp5.so
-//
-// apachectl restart
-
-
-======== PHP setup
-
-Edit php.ini (try /usr/local/php5/lib/php.ini
-search for "tmp" and make sure file uploads are enabled, and that you have a tmp directory of that name, with permissions set.
-To load the new php.ini, restart apache: apachectl restart
-
-=========== PERMISSIONS FOR MYSQL DATABASE
-sudo
-cd /usr/local/mysql/bin
-start as david, with 'localhost' as server:
-      ./mysql -h localhost
-      
-      TO USE EXISTING: use noterio;
-      check with show tables;
-      
-      TO CREATE NEW:
-	  CREATE database noterowio;
-      CREATE USER 'david'@'localhost';
-then GRANT ALL PRIVILEGES ON noterio.* TO 'david'@'localhost' WITH GRANT OPTION;
-
-====== STRUCTURE OF MYSQL DATABASE 
-
-CREATE TABLE 'books' (
-  'bookid' int(11) NOT NULL AUTO_INCREMENT,
-  'author' text,
-  'pub' text,
-  'date' text,
-  'city' text,
-  'title' text,
-  'translator' text,
-  'article' text,
-  'vol' text,
-  'issue' text,
-  'misc' text,
-  'type' text,
-  'tags' text,
-  'journal' text,
-  'container' text,
-  'url' text,
-  'project' text,
-  'user' text,
-  'nickname' text,
-  PRIMARY KEY ('bookid')
-) ENGINE=MyISAM AUTO_INCREMENT=20 DEFAULT CHARSET=latin1;
-
-CREATE TABLE 'notes' (
-  'noteid' int(4) NOT NULL AUTO_INCREMENT,
-  'content' text,
-  'bookid' text,
-  'page' text,
-  'tagstring' text,
-  'rating' int(11) DEFAULT NULL,
-  PRIMARY KEY ('noteid'),
-  FULLTEXT KEY 'content' ('content')
-) ENGINE=MyISAM AUTO_INCREMENT=1765 DEFAULT CHARSET=latin1;
-
-CREATE TABLE 'tags' (
-  'tag' text,
-  'noteid' int(11) DEFAULT NULL,
-  'bookid' int(11) DEFAULT NULL,
-  'tagid' int(10) unsigned NOT NULL AUTO_INCREMENT,
-  PRIMARY KEY ('tagid')
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
-
-CREATE TABLE 'project' (
-  'id' int(11) unsigned NOT NULL AUTO_INCREMENT,
-  'name' text,
-  'description' text,
-  'user' int(11) DEFAULT NULL,
-  'created' date DEFAULT NULL,
-  PRIMARY KEY ('id')
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
-
-CREATE TABLE 'users' (
-  'id' int(11) unsigned NOT NULL AUTO_INCREMENT,
-  'username' text NOT NULL,
-  'email' text,
-  'created' date DEFAULT NULL,
-  'password' text,
-  PRIMARY KEY ('id')
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
-CREATE TABLE 'playlists' (
-  'id' int(11) unsigned NOT NULL AUTO_INCREMENT,
-  'title' text,
-  'user' text,
-  'comment' text,
-  'created' date DEFAULT NULL,
-  'project' text,
-  PRIMARY KEY ('id')
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
-
-CREATE TABLE 'playlistentries' (
-  'id' int(11) unsigned NOT NULL AUTO_INCREMENT,
-  'user' text,
-  'project' text,
-  'title' text,
-  'noteid' int(11) DEFAULT NULL,
-  'bookid' int(11) DEFAULT NULL,
-  'modified' date DEFAULT NULL,
-  PRIMARY KEY ('id')
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
-NOTE: Must add a unique key to playlistentries:
-alter table playlistentries ADD UNIQUE KEY noteidtitle (noteid,title(100))
-
-ADD INDEX: 
-alter table tags add fulltext index tags_index (tag);
-alter table notes add fulltext index notes_index (content);
-
--->
-*/
 

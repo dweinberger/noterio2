@@ -1,0 +1,33 @@
+:: BIBLIO
+
+TITLE= Heidegger's Mortals and Gods
+AUTHOR= Fell, Joseph
+PUB= Research in Phenomenology
+DATE= 
+CITY= 
+MISC=
+TAGS= 
+JOURNAL=
+VOL=XV
+ISSUE=
+PAGES=29-41
+URL=
+
+:: NOTES
+
+29/"The entirety of Heidegger's thinking turn out to be a protratracted efforty at remembering _the place_ in which all human experience...has always come to pass. This lifelong effort was necessary because this place has dissimulated itselfg through the history of metaphysics; the epochs of metaphysics are differing modes of forgetting of the place." >>forgetting,hidden
+
+29/ "metaphysics has unknowingly sought for what is already given." >> beginning
+
+29/ metaphysics counts on a place that is already given in which its positing takes place. "This place, then, has lain in oblivion...inthe way that something very near can be missed... >> beginning,hidden, near
+
+31/Ge-stell [Com-position] is "the Fourfold's own self-dissimulation">>hidden, fourfold
+
+31/ To undertstand 4fold have to understand H's earlier work. [just like Greeks] >> beginning
+
+32/being toward death and relation to gods: past is repeating or retrieval >> time, beginning
+
+33/ death reveals the nothing that discloses [quoting demske] "the questionableness of beings and thus brings Being itself to appearance">> death,hidden,being
+
+35-6/ The absence of the gods keeps absolutes out of the picture. >> absence
+

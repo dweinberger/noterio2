@@ -1,0 +1,137 @@
+
+=============  SET UP NOTERIO ======== 
+
+// IN FIREFOX, set signed.applets.codebase_principal_support to true (about:config)
+// IN OS X edit /private/etc/apache2/httpd.conf (as sudo)
+// UNCOMMENT: 
+// # AddHandler cgi-script .cgi
+// AND ADD
+//  AddHandler cgi-script .pl
+// Uncomment: 
+// # LoadModule php5_module libexec/httpd/libphp5.so
+//
+// apachectl restart
+
+
+======== PHP setup
+
+Edit php.ini (try /usr/local/php5/lib/php.ini
+search for "tmp" and make sure file uploads are enabled, and that you have a tmp directory of that name, with permissions set.
+To load the new php.ini, restart apache: apachectl restart
+
+=========== PERMISSIONS FOR MYSQL DATABASE
+sudo
+cd /usr/local/mysql/bin
+start as david, with 'localhost' as server:
+      ./mysql -h localhost
+      create user when logged in as root
+      CREATE USER 'david'@'localhost' identified by 'nn';
+      
+      TO USE EXISTING: use noterio;
+      check with show tables;
+      
+      TO CREATE NEW:
+	  CREATE database noterio;
+      
+then 
+	GRANT ALL PRIVILEGES ON noterio.* TO 'david'@'localhost' identified by 'nn' WITH GRANT OPTION;
+	
+====== SAMPLES
+
+The database table schemas are in noterio_database_schema.txt
+There's a sample database with some data in noterio_sample_database.sql
+
+
+
+====== STRUCTURE OF MYSQL DATABASE 
+
+CREATE TABLE 'books' (
+  'bookid' int(11) NOT NULL AUTO_INCREMENT,
+  'author' text,
+  'pub' text,
+  'date' text,
+  'city' text,
+  'title' text,
+  'translator' text,
+  'article' text,
+  'vol' text,
+  'issue' text,
+  'misc' text,
+  'type' text,
+  'tags' text,
+  'journal' text,
+  'container' text,
+  'url' text,
+  'project' text,
+  'user' text,
+  'nickname' text,
+  PRIMARY KEY ('bookid')
+) ENGINE=MyISAM AUTO_INCREMENT=20 DEFAULT CHARSET=latin1;
+
+CREATE TABLE 'notes' (
+  'noteid' int(4) NOT NULL AUTO_INCREMENT,
+  'content' text,
+  'bookid' text,
+  'page' text,
+  'tagstring' text,
+  'indent' int(4),
+  'origorder' int(4),
+  'rating' int(11) DEFAULT NULL,
+  PRIMARY KEY ('noteid'),
+  FULLTEXT KEY 'content' ('content')
+) ENGINE=MyISAM AUTO_INCREMENT=1765 DEFAULT CHARSET=latin1;
+
+CREATE TABLE 'tags' (
+  'tag' text,
+  'noteid' int(11) DEFAULT NULL,
+  'bookid' int(11) DEFAULT NULL,
+  'tagid' int(10) unsigned NOT NULL AUTO_INCREMENT,
+  PRIMARY KEY ('tagid')
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
+
+CREATE TABLE 'project' (
+  'id' int(11) unsigned NOT NULL AUTO_INCREMENT,
+  'name' text,
+  'description' text,
+  'user' int(11) DEFAULT NULL,
+  'created' date DEFAULT NULL,
+  PRIMARY KEY ('id')
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+CREATE TABLE 'users' (
+  'id' int(11) unsigned NOT NULL AUTO_INCREMENT,
+  'username' text NOT NULL,
+  'email' text,
+  'created' date DEFAULT NULL,
+  'password' text,
+  PRIMARY KEY ('id')
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+CREATE TABLE 'playlists' (
+  'id' int(11) unsigned NOT NULL AUTO_INCREMENT,
+  'title' text,
+  'user' text,
+  'comment' text,
+  'created' date DEFAULT NULL,
+  'project' text,
+  PRIMARY KEY ('id')
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+CREATE TABLE 'playlistentries' (
+  'id' int(11) unsigned NOT NULL AUTO_INCREMENT,
+  'user' text,
+  'project' text,
+  'title' text,
+  'noteid' int(11) DEFAULT NULL,
+  'bookid' int(11) DEFAULT NULL,
+  'modified' date DEFAULT NULL,
+  PRIMARY KEY ('id')
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+NOTE: Must add a unique key to playlistentries:
+alter table playlistentries ADD UNIQUE KEY noteidtitle (noteid,title(100))
+
+ADD INDEX: 
+alter table tags add fulltext index tags_index (tag);
+alter table notes add fulltext index notes_index (content);
+
+-->

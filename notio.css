@@ -1,9 +1,9 @@
 #logo{
-  font-family:Tahoma,Helvetica Neue,Arial;
+  font-family:Tahoma,Helvetica Neue,Verdana;
   color:#FF76C5;
 }
 p, .subhead {
- font-family:Tahoma,Helvetica Neue,Arial;
+ font-family:Tahoma,Helvetica Neue,Verdana;
 
 }
 .subhead{
@@ -14,7 +14,7 @@ p, .subhead {
 	height: 95%
 	text-align:right;
 	color: #FF0AD0;
-	font-family:Tahoma,Helvetica Neue,Arial;
+	font-family:Tahoma,Helvetica Neue,Verdana;
 	font-size: 12px;
 	font-weight:bold;
 }
@@ -25,8 +25,9 @@ p, .subhead {
 	background-color: #F5FFF6;
 }
 .bibp{
-	font-family: Georgia, Bookman, Garamond, Serif;
+	//font-family: Georgia, Bookman, Garamond, Serif;
 	font-size: 11px;
+	font-style: italic;
 	margin-top: 6pt;
 	margin-bottom: 6pt;
 	
@@ -38,15 +39,17 @@ p, .subhead {
 	width: 300px;
 	height: 75px;
 	max-height:400px;
-	border: 1px dashed red;
+	border: 1px solid gray;
+	box-shadow:rgba(0,0,0,0.5) 0px 0px 10px;
 	float:left;
 	overflow: scroll;  
+	padding: 8px;
 }
 .topictextclass{
 	width:100%;
 	background-color: "#C0DFFF";
 	height: 40px;
-	font-family: Tahoma, Helvetica Neue, Arial;
+	font-family: Tahoma, Helvetica Neue, Verdana;
 	text-align:center;
 	border: 3px solid #cccccc;
 	padding: 5px;
@@ -109,13 +112,13 @@ textarea {
 }
 .uploadclass{
 	font-size:11pt;
-	font-family: Tahoma,Helvetica Neue,Arial,Verdana,Sans Serif;
+	font-family: Tahoma,Helvetica Neue,Verdana,Verdana,Sans Serif;
 
 }
 #loginregdiv{
 	background-color: #AFFFB9;
 	font-size:10pt;
-	font-family: Tahoma,Arial,Verdana, Sans Serif;
+	font-family: Tahoma,Verdana,Verdana, Sans Serif;
 }
 #logindisplayclass{
 	color: #C2CDFF;
@@ -126,7 +129,7 @@ textarea {
 .smalltext, .smalltextupdate, .smalltextblue, #footer{
 	font-size: 10pt;
 	color: white;
-	font-family: Tahoma, Arial,Verdana, Sans Serif;
+	font-family: Tahoma, Verdana,Verdana, Sans Serif;
 }
 .smalltextupdate{
   color: yellow;
@@ -154,6 +157,7 @@ textarea {
 	border-width:1px;
 	background-color: #E9FFEC;
 	width:90%;
+	display: none;
 }
 .scratchpadspanclass{
 		font-size:10pt;
@@ -162,9 +166,15 @@ textarea {
 	font-size:8pt;
 }
 .scratchpadh2class{
-	font-family:Arial, Helvetica, sans-serif;
+	font-family:Verdana, Helvetica, sans-serif;
 	font-size: 12pt;
 	color:Green;
+}
+.scratchpadedit{
+	width:100%;
+	height: 400px;
+	color: red;
+  
 }
 #stackviewdiv{
   width:400px;
@@ -183,6 +193,13 @@ textarea {
 	/* border-width: 1px; */
 	
 }
+.notelistrow{
+	/*background-color: #F9E7FF;
+	border: 1px solid white;*/
+	
+	background-color: white;
+	
+}
 .biblioplaintextareaclass{
 	background-color: #DDDDDD;
 	width: 400px;
@@ -191,35 +208,77 @@ textarea {
 	font-family:Geneva,Helvetica, san-serif;
 }
 
+.notespandidcheckclass{
+	width:20px;
+}
+.noteratingcellclass{
+	width:60px;
+}
+
+.notetd{
+	background-color: #FFF8F4;
+	border-radius: 10px;
+	padding-left:5px;
+	padding-right:5px;
+	padding-top:5 px;
+	padding-bottom: 5px;
+	box-shadow:rgba(0,0,0,0.5) 0px 0px 8px;
+	
+	
+}
+
 .notecontentclass,.notecontentclassediting{
-	/* width: 700pt; */ 
+	
 	color: Black;
-	background-color: #D6EAEF;
+	/*background-color: #D6EAEF;*/
 	font-family: "Georgia";
 	font-size: 10pt;
 	width: 100%;
-	height: auto;
-	/*border: 1px solid #948C95;*/
-	border-radius: 8px;
-	padding-top:3px;
-	padding-bottom:3px;
-	
+	height: auto;	
+	float:right;	
+}
+
+
+.paddedcell{
+  float:left;
 }
 .notecontentclassediting {
 	background-color: #353A3C;
 	color: #C7D9DE;
+	font-family: "Georgia";
+	font-size: 10pt;
+	width: 100%;
+	height: auto;
+	border-radius: 8px;
+	border-width:0px;
 }
 .notepageclass{
-	/* width: 30pt;*/ 
-	font-family: Arial;
+	width: 30pt; 
+	font-family: Verdana;
 	font-size: 9pt;
 	color: #336666;
 	border: 1px solid #948C95;
 	border-radius: 5px;
 }
+.noteorderclass{
+	/*width: 15pt*/ 
+	font-family: Verdana;
+	font-size: 9pt;
+	color: #336666;
+	/*border: 1px solid #948C95;
+	border-radius: 5px; */
+	text-align: center;
+}
 .notetagclass{
 	/* width: 100pt;*/ 
 	color: #FF00DD;
+	font-family: Verdana;
+	font-size: 9pt;
+}
+.notetitleclass{
+	font-family: Verdana,Helvetica Neue,Verdana;
+	font-size: 8pt;
+	color: #343434;
 }
 .inditag{
 	box-shadow:rgba(0,0,0,0.5) 0px 0px 8px;
@@ -228,8 +287,25 @@ textarea {
 	background-color:#95D5A3;
 	padding: 2px;
 }
+
+
+#bookstable{
+	width:99%;
+	display:none;
+}
+
+#booktableobj{
+	width:99%;
+}
+
+#noteslisttable{
+	width: 99%;
+	border-width:1px;
+	border-color: black;
+	border-style: solid;
+}
 .notestableheaderclass{
-	font-family: Helvetica Neue, Helvetica, Arial, Sans Serif;
+	font-family: Helvetica Neue, Helvetica, Verdana, Sans Serif;
 	font-size: 14pt;
 	color: #364E6A;
 	background-color: #B8B5E3; 
@@ -237,8 +313,12 @@ textarea {
 }
 .metatitle{
 	color:#737D96;
+	font-family: Helvetica Neue, Helvetica, Verdana, Sans Serif;
+	font-size: 18pt;
+	background-color: #B8B5E3; 
+	text-align:center;
 }
-.notestabletitleclass { /* Notes For Tag: */
+.notestabletitleclass  { /* Notes For Tag: */
 	font-family: Georgia;
 	font-size: 16pt;
 	color: #BCBAE9;
@@ -272,39 +352,72 @@ font-size:11px;
 	color: white;
 }
 .booklistrowclass{
-   border: 1px dashed  #62F2FF;
+  position:relative;
+   
 }
-.booklisttitleclass{
+.booklisttitleclass, .booklistauthorclass, .nickclass, .parentclass, .booklistnoteclass, .booklisttagclass,.booklistnumbclass, .updateclass{
 	font-family: Tahoma;
 	font-size: 10pt;
 	background-color: #CFD6EE; 
 	
 }
-.booklistauthorclass{
-	font-family: Tahoma;
-	font-size: 10pt;
-	color: #240089;
-	background-color: #CFD6EE; 
+.updateclass{
+	font-size: 9px;
+	color: blue;
+	border-radius: 4px;
+	border: 1px solid white;
+	cursor: hand;
+}
+.updatebookhead, #updatebooktext{
+	font-family: Tahoma,Verdana,Arial,sans serif;
+}
+.updatebookhead{
+	color: #01036E;
+	font-size:18px;
+	font-weight: bold;
+}
+#updatebooktext{
+	color: #0104BB;
+	font-size:14px;
+	margin-bottom: 10px;	
+}
+.displaybtnclass{
+	width:40px;
+}
+.nickclass{
+	text-decoration: underline;
+}
+.booklistauthorclass, .booklistnumberclass{
+	
 	
 }
 .booklistnoteclass{
-	font-family: Tahoma;
 	font-size: 9pt;
 	color: #240089;
-	background-color: #CFD6EE; 
+	width: 10%
+	
 	
 }
 .booklistnumbernotesclass{
-	font-family: Tahoma;
-	font-size: 10pt;
+	width:20px;
 	color: #000089;
 	text-align:right;
 	background-color: #E2FFFA; 
 	
 }
+#updateBookContentsDiv{
+ width: 400px;
+ position:absolute;
+ background-color: #C8DBFF;
+ z-index: 1000;
+ border: 2px solid blue;
+ padding: 10px;
+ box-shadow:rgba(0,0,0,0.5) 0px 0px 15px;
+ 
+}
 /* #booklisttextarea{
 width:325px;
-font-family:Arial;
+font-family:Verdana;
 font-size:11px;
 } 
 */
@@ -335,8 +448,14 @@ font-size:11px;
 	color: #666666;
 }
 .tagclass{
-  font-family: Helvetica Neue,Helvetica,Geneva,Arial,Sans Serif;
+  font-family: Helvetica Neue,Helvetica,Geneva,Verdana,Sans Serif;
   color: #0080FF;
+  box-shadow:rgba(0,0,0,0.5) 0px 0px 8px;
+	border-radius: 5px;
+	color:#2A3C2E;
+	background-color:#95D5A3;
+	padding: 2px;
+  
 }
 
 #notesareadiv{
@@ -349,12 +468,12 @@ font-size:11px;
 .noteinfobookidclass{
 	color: #CCCCCC;
 	font-size: 8pt;
-	font-family:Arial;
+	font-family:Verdana;
 }
 .noteinfonoteidclass{
 	color: #AAAAAA;
 	font-size: 8pt;
-	font-family:Arial;
+	font-family:Verdana;
 }
 .uiwarning{
  background-color:yellow;

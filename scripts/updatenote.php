@@ -10,32 +10,48 @@
 	
 	$s = "";
 	
-
+    error_log("page:$pg");
 
     $dbh = mysql_connect("127.0.0.1","david","nn");
 	if (!mysql_select_db("noterio")) {
+	  //  error_log("Error: " . mysql_error());
 		echo mysql_errno().": ". mysql_error ()."";
 		}
 		else {
 			
-			
+		// if !SAMETAGS! then don't change the tags at all
+		//error_log("In the Ifs");
 
-      if ($tags != "") {
-      	$s = " tagstring = '" . $tags . "'";
+      // if tags but not the sametags
+      if (($tags != "") && ($tags !== "!SAMETAGS!")) {
+      	$s = " tagstring='$tags'";
       }
 	  
-	  if (($tags != "") && ($cont != "")) {
-	  	$s = $s . ", ";
+	  // if  tags and content
+	  if (($s != "") && ($cont != "")) {
+	  	$s = $s . ", content='$cont'";
 	  }
-	  if ($cont !="") {
-	  	$s = $s . " content='" . $cont . "'";
+	  // if no tags but content
+	  if (($s == "") && ($cont !="")) {
+	  	$s = "content='$cont'";
 	  }
+	  
+	  // any pages to change?
+	  if (($pg != "") && ($pg != "!SAMEPAGES!")){
+	  	if ($s != ""){
+	  		$s = $s . ",page='$pg'";
+	  	}
+	  	else {
+	  		$s ="page='$pg'";
+	  	}
+	  }
+	  //error_log("s=$s");
 		
 		//$cont = mysql_real_escape_string($cont);
 	
 		
 		$query = "UPDATE notes SET " . $s . "  where noteid=" . $noteid ;
-	
+	     //error_log("query: $query");
 		$res = mysql_query ($query,$dbh);
 		
 		if (!$res) {
