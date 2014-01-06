@@ -3,9 +3,10 @@
 // uploads a single file with a known bookid to update/replace it
 
 error_reporting(E_ALL);
-error_reporting (E_ALL ^ E_NOTICE);
+ error_reporting (E_ALL ^ E_NOTICE);
 
-ini_set("display_errors", 0);
+ini_set("display_errors", 1);
+
 ini_set('auto_detect_line_endings',true); // helps mac recognize unix line endings
 
 function debugprt($txt){
@@ -18,12 +19,12 @@ function debugprt($txt){
   }
 }
 
-
-$bid = $_REQUEST["bookidsingle"];
+//DEBUG
+//$bid = $_REQUEST["bookidsingle"];
 debugprt("bid=" . $bid);
 
 // DEBUG
-//$bid=8;
+$bid=8;
 
 $dbh = mysql_connect("127.0.0.1","david","nn");
 
@@ -34,7 +35,7 @@ $dbh = mysql_connect("127.0.0.1","david","nn");
 		}
 
 
-debugprt("------------------------ SINGLE UPLOAD---------------");
+debugprt("------------------------ SINGLE UPLOAD file---------------");
 
 	$originalorder = 0;
 	$tmpnamepath = $_FILES['userfiles']['tmp_name'][0];
@@ -391,22 +392,22 @@ debugprt("------------------------ SINGLE UPLOAD---------------");
 		$query = "UPDATE `books` SET `author`='$author',`pub`='$pub',`date`='$date',`city`='$city',`title`='$tit',`translator`='$translator',`article`='$article',`vol`='$vol',`issue`='$issue',`misc`='$misc',`type`='$type',`tags`='$tags',`journal`='$journal',`container`='$container',`url`='$url',`project`='$project',`user`='$user',`nickname`='$nickname',`pages`='$pages',`note`='$note',`isbn`='$isbn',`parent`='$parent',`dateUploaded`='$dateUploaded' WHERE 'bookid'=$bid";					 
 											 
 										
-							  $res = mysql_query ($query,$dbh);
+		$res = mysql_query ($query,$dbh);
 					
 		debugprt("RES=" . $res);
-							  if (!$res) {
-									  echo "<p class='error'>++Problem with database after attempt to add book: " . mysql_errno().": ". mysql_error ()."</p>";
-									  debugprt("<p><b>++++ $tit NOT added</b>");
-									  return -1;
-								  } else {
-									  debugprt("$tit  added.<BR>");
-									  // get bookid from latest transaction
-									  $bid = mysql_insert_id();
-									  
-									  }
-		
-
-
+		debugprt("query=" . $query);
+		if (!$res) {
+				$functionresult= "<p class='error'>++Problem with database after attempt to add book: " . mysql_errno().": ". mysql_error ()."</p>";
+				debugprt("<p><b>++++ $tit NOT added</b>");
+		} else {
+			debugprt("$tit  added.<BR>");
+			// get bookid from latest transaction
+			$bid = mysql_insert_id();
+			$functionresult = "<p>" . $tit . " updated. (Bookid:" . $bid . ").</p>";
+		}
+	
+				
 debugprt("------------------OUT OF Multi-----");
+echo $functionresult;
 
 ?>

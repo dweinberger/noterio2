@@ -245,7 +245,7 @@ function init(){
    // ---- set up single file update
      $('#multiformbuttonsingle').click(function(){
      	// get the bookid
-     	var bid = document.getElementById("whichbook").innerText;
+     	//var bid = document.getElementById("whichbook").innerText;
      	var fm = document.getElementById("singleuploadform");
 		var formData = new FormData(fm);
 		 //alert(projname);	
@@ -258,11 +258,11 @@ function init(){
 			contentType: false,
 			processData: false,
 			success: function(res){
-			  $("#status").html("Clicked. " + res);
+			  $("#singleupresult").text(res);
 			},
 			error: function(e){
-			  var er = e;
-			   $("#status").html("Error. " + er);
+			  var er = e.statusText;
+			   $("#singleupresult").html("Error. ");
 			}
      })	
    });
